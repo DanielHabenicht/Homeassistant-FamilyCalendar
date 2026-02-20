@@ -1,0 +1,346 @@
+- generic [ref=e4]:
+  - complementary [ref=e5]:
+    - generic [ref=e7]:
+      - generic [ref=e8]:
+        - generic "Sidebar toggle" [ref=e10]:
+          - button "Sidebar toggle" [ref=e11] [cursor=pointer]:
+            - generic [ref=e13]:
+              - img
+        - generic [ref=e14]: Home Assistant
+      - generic [ref=e15]:
+        - generic [ref=e17]:
+          - generic:
+            - listitem [ref=e19] [cursor=pointer]:
+              - generic [ref=e20]:
+                - generic [ref=e22]:
+                  - img
+                - generic [ref=e24]: Overview
+            - listitem [ref=e26] [cursor=pointer]:
+              - generic [ref=e27]:
+                - generic [ref=e28]:
+                  - img
+                - generic [ref=e30]: Map
+            - listitem [ref=e32] [cursor=pointer]:
+              - generic [ref=e33]:
+                - generic [ref=e35]:
+                  - img
+                - generic [ref=e37]: Overview
+            - listitem [ref=e39] [cursor=pointer]:
+              - generic [ref=e40]:
+                - generic [ref=e41]:
+                  - img
+                - generic [ref=e43]: Energy
+            - listitem [ref=e45] [cursor=pointer]:
+              - generic [ref=e46]:
+                - generic [ref=e47]:
+                  - img
+                - generic [ref=e49]: Activity
+            - listitem [ref=e51] [cursor=pointer]:
+              - generic [ref=e52]:
+                - generic [ref=e53]:
+                  - img
+                - generic [ref=e55]: History
+            - listitem [ref=e57] [cursor=pointer]:
+              - generic [ref=e58]:
+                - generic [ref=e59]:
+                  - img
+                - generic [ref=e61]: Calendar
+            - listitem [ref=e63] [cursor=pointer]:
+              - generic [ref=e64]:
+                - generic [ref=e65]:
+                  - img
+                - generic [ref=e67]: Media
+            - listitem [ref=e69] [cursor=pointer]:
+              - generic [ref=e70]:
+                - generic [ref=e71]:
+                  - img
+                - generic [ref=e73]: To-do lists
+        - generic [ref=e74]:
+          - generic:
+            - listitem [ref=e76] [cursor=pointer]:
+              - generic [ref=e77]:
+                - generic [ref=e78]:
+                  - img
+                - generic [ref=e80]: Settings
+                - generic [ref=e81]: "5"
+            - listitem [ref=e83] [cursor=pointer]:
+              - generic [ref=e84]:
+                - generic [ref=e85]:
+                  - img
+                - generic [ref=e87]: Notifications
+                - generic [ref=e88]: "2"
+            - listitem [ref=e90] [cursor=pointer]:
+              - generic [ref=e91]:
+                - generic [ref=e93]: TU
+                - generic [ref=e95]: Test User
+  - generic [ref=e100]:
+    - generic [ref=e103]:
+      - generic [ref=e104]: Calendar
+      - generic [ref=e105]:
+        - generic [ref=e106]:
+          - generic:
+            - button "Add to Home Assistant" [ref=e109] [cursor=pointer]:
+              - generic [ref=e111]:
+                - img
+            - generic:
+              - generic: Add device
+              - generic: Create automation
+              - generic: Create area
+              - generic: Add person
+        - button [ref=e114] [cursor=pointer]:
+          - generic [ref=e116]:
+            - img
+        - button [ref=e119] [cursor=pointer]:
+          - generic [ref=e121]:
+            - img
+        - generic [ref=e122]:
+          - generic:
+            - button "Open dashboard menu" [ref=e125] [cursor=pointer]:
+              - generic [ref=e127]:
+                - img
+            - generic:
+              - generic: Refresh
+              - generic: Unused entities
+              - generic: Reload resources
+              - generic: Edit dashboard
+    - generic [ref=e136]:
+      - generic:
+        - generic [ref=e138]: Calendar
+        - generic [ref=e139]:
+          - button "A Adam" [ref=e140] [cursor=pointer]:
+            - generic [ref=e141]: A
+            - generic [ref=e142]: Adam
+          - button "E Eve" [ref=e143] [cursor=pointer]:
+            - generic [ref=e144]: E
+            - generic [ref=e145]: Eve
+        - generic [ref=e147]:
+          - generic [ref=e148]:
+            - generic [ref=e149]:
+              - generic [ref=e150]:
+                - button "Previous week" [ref=e151] [cursor=pointer]:
+                  - img
+                - button "Next week" [ref=e152] [cursor=pointer]:
+                  - img
+              - button "today" [disabled] [ref=e153] [cursor=pointer]
+            - heading "Feb 15 – 21, 2026" [level=2] [ref=e155]
+            - generic [ref=e157]:
+              - button "month" [ref=e158] [cursor=pointer]
+              - button "week" [pressed] [ref=e159] [cursor=pointer]
+              - button "day" [ref=e160] [cursor=pointer]
+          - generic "Feb 15 – 21, 2026" [ref=e161]:
+            - grid [ref=e163]:
+              - rowgroup [ref=e164]:
+                - row "February 15, 2026 February 16, 2026 February 17, 2026 February 18, 2026 February 19, 2026 February 20, 2026 February 21, 2026" [ref=e169]:
+                  - columnheader "February 15, 2026" [ref=e170]:
+                    - generic [ref=e171]: Sun 2/15
+                  - columnheader "February 16, 2026" [ref=e172]:
+                    - generic [ref=e173]: Mon 2/16
+                  - columnheader "February 17, 2026" [ref=e174]:
+                    - generic [ref=e175]: Tue 2/17
+                  - columnheader "February 18, 2026" [ref=e176]:
+                    - generic [ref=e177]: Wed 2/18
+                  - columnheader "February 19, 2026" [ref=e178]:
+                    - generic [ref=e179]: Thu 2/19
+                  - columnheader "February 20, 2026" [ref=e180]:
+                    - generic [ref=e181]: Fri 2/20
+                  - columnheader "February 21, 2026" [ref=e182]:
+                    - generic [ref=e183]: Sat 2/21
+              - rowgroup [ref=e184]:
+                - row [ref=e190]:
+                  - generic [ref=e191]: all-day
+                  - gridcell [ref=e192]
+                  - gridcell [ref=e193]
+                  - gridcell [ref=e194]
+                  - gridcell [ref=e195]
+                  - gridcell [ref=e196]
+                  - gridcell [ref=e197]
+                  - gridcell [ref=e198]
+                - generic [ref=e201]:
+                  - table [ref=e203]:
+                    - rowgroup [ref=e206]:
+                      - row [ref=e207]:
+                        - cell [ref=e208]:
+                          - generic [ref=e210]: 12am
+                        - cell [ref=e211]
+                      - row [ref=e212]:
+                        - cell [ref=e213]
+                        - cell [ref=e214]
+                      - row [ref=e215]:
+                        - cell [ref=e216]:
+                          - generic [ref=e218]: 1am
+                        - cell [ref=e219]
+                      - row [ref=e220]:
+                        - cell [ref=e221]
+                        - cell [ref=e222]
+                      - row [ref=e223]:
+                        - cell [ref=e224]:
+                          - generic [ref=e226]: 2am
+                        - cell [ref=e227]
+                      - row [ref=e228]:
+                        - cell [ref=e229]
+                        - cell [ref=e230]
+                      - row [ref=e231]:
+                        - cell [ref=e232]:
+                          - generic [ref=e234]: 3am
+                        - cell [ref=e235]
+                      - row [ref=e236]:
+                        - cell [ref=e237]
+                        - cell [ref=e238]
+                      - row [ref=e239]:
+                        - cell [ref=e240]:
+                          - generic [ref=e242]: 4am
+                        - cell [ref=e243]
+                      - row [ref=e244]:
+                        - cell [ref=e245]
+                        - cell [ref=e246]
+                      - row [ref=e247]:
+                        - cell [ref=e248]:
+                          - generic [ref=e250]: 5am
+                        - cell [ref=e251]
+                      - row [ref=e252]:
+                        - cell [ref=e253]
+                        - cell [ref=e254]
+                      - row [ref=e255]:
+                        - cell [ref=e256]:
+                          - generic [ref=e258]: 6am
+                        - cell [ref=e259]
+                      - row [ref=e260]:
+                        - cell [ref=e261]
+                        - cell [ref=e262]
+                      - row [ref=e263]:
+                        - cell [ref=e264]:
+                          - generic [ref=e266]: 7am
+                        - cell [ref=e267]
+                      - row [ref=e268]:
+                        - cell [ref=e269]
+                        - cell [ref=e270]
+                      - row [ref=e271]:
+                        - cell [ref=e272]:
+                          - generic [ref=e274]: 8am
+                        - cell [ref=e275]
+                      - row [ref=e276]:
+                        - cell [ref=e277]
+                        - cell [ref=e278]
+                      - row [ref=e279]:
+                        - cell [ref=e280]:
+                          - generic [ref=e282]: 9am
+                        - cell [ref=e283]
+                      - row [ref=e284]:
+                        - cell [ref=e285]
+                        - cell [ref=e286]
+                      - row [ref=e287]:
+                        - cell [ref=e288]:
+                          - generic [ref=e290]: 10am
+                        - cell [ref=e291]
+                      - row [ref=e292]:
+                        - cell [ref=e293]
+                        - cell [ref=e294]
+                      - row [ref=e295]:
+                        - cell [ref=e296]:
+                          - generic [ref=e298]: 11am
+                        - cell [ref=e299]
+                      - row [ref=e300]:
+                        - cell [ref=e301]
+                        - cell [ref=e302]
+                      - row [ref=e303]:
+                        - cell [ref=e304]:
+                          - generic [ref=e306]: 12pm
+                        - cell [ref=e307]
+                      - row [ref=e308]:
+                        - cell [ref=e309]
+                        - cell [ref=e310]
+                      - row [ref=e311]:
+                        - cell [ref=e312]:
+                          - generic [ref=e314]: 1pm
+                        - cell [ref=e315]
+                      - row [ref=e316]:
+                        - cell [ref=e317]
+                        - cell [ref=e318]
+                      - row [ref=e319]:
+                        - cell [ref=e320]:
+                          - generic [ref=e322]: 2pm
+                        - cell [ref=e323]
+                      - row [ref=e324]:
+                        - cell [ref=e325]
+                        - cell [ref=e326]
+                      - row [ref=e327]:
+                        - cell [ref=e328]:
+                          - generic [ref=e330]: 3pm
+                        - cell [ref=e331]
+                      - row [ref=e332]:
+                        - cell [ref=e333]
+                        - cell [ref=e334]
+                      - row [ref=e335]:
+                        - cell [ref=e336]:
+                          - generic [ref=e338]: 4pm
+                        - cell [ref=e339]
+                      - row [ref=e340]:
+                        - cell [ref=e341]
+                        - cell [ref=e342]
+                      - row [ref=e343]:
+                        - cell [ref=e344]:
+                          - generic [ref=e346]: 5pm
+                        - cell [ref=e347]
+                      - row [ref=e348]:
+                        - cell [ref=e349]
+                        - cell [ref=e350]
+                      - row [ref=e351]:
+                        - cell [ref=e352]:
+                          - generic [ref=e354]: 6pm
+                        - cell [ref=e355]
+                      - row [ref=e356]:
+                        - cell [ref=e357]
+                        - cell [ref=e358]
+                      - row [ref=e359]:
+                        - cell [ref=e360]:
+                          - generic [ref=e362]: 7pm
+                        - cell [ref=e363]
+                      - row [ref=e364]:
+                        - cell [ref=e365]
+                        - cell [ref=e366]
+                      - row [ref=e367]:
+                        - cell [ref=e368]:
+                          - generic [ref=e370]: 8pm
+                        - cell [ref=e371]
+                      - row [ref=e372]:
+                        - cell [ref=e373]
+                        - cell [ref=e374]
+                      - row [ref=e375]:
+                        - cell [ref=e376]:
+                          - generic [ref=e378]: 9pm
+                        - cell [ref=e379]
+                      - row [ref=e380]:
+                        - cell [ref=e381]
+                        - cell [ref=e382]
+                      - row [ref=e383]:
+                        - cell [ref=e384]:
+                          - generic [ref=e386]: 10pm
+                        - cell [ref=e387]
+                      - row [ref=e388]:
+                        - cell [ref=e389]
+                        - cell [ref=e390]
+                      - row [ref=e391]:
+                        - cell [ref=e392]:
+                          - generic [ref=e394]: 11pm
+                        - cell [ref=e395]
+                      - row [ref=e396]:
+                        - cell [ref=e397]
+                        - cell [ref=e398]
+                  - row "10:08 - 11:08 Current Event 11:08 - 12:00 Future Event 12:00 - 12:08 Future Event" [ref=e402]:
+                    - gridcell [ref=e403]
+                    - gridcell [ref=e404]
+                    - gridcell [ref=e405]
+                    - gridcell [ref=e406]
+                    - gridcell [ref=e407]
+                    - gridcell "10:08 - 11:08 Current Event 11:08 - 12:00 Future Event" [ref=e408]:
+                      - generic [ref=e410]:
+                        - generic [ref=e414]:
+                          - generic [ref=e415]: 10:08 - 11:08
+                          - generic [ref=e417]: Current Event
+                        - generic [ref=e421]:
+                          - generic [ref=e422]: 11:08 - 12:00
+                          - generic [ref=e424]: Future Event
+                    - gridcell "12:00 - 12:08 Future Event" [ref=e425]:
+                      - generic [ref=e431]:
+                        - generic [ref=e432]: 12:00 - 12:08
+                        - generic [ref=e434]: Future Event

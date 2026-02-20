@@ -1,0 +1,242 @@
+- generic [ref=e4]:
+  - complementary [ref=e5]:
+    - generic [ref=e7]:
+      - generic [ref=e8]:
+        - generic "Sidebar toggle" [ref=e10]:
+          - button "Sidebar toggle" [ref=e11] [cursor=pointer]:
+            - generic [ref=e13]:
+              - img
+        - generic [ref=e14]: Home Assistant
+      - generic [ref=e15]:
+        - generic [ref=e17]:
+          - generic:
+            - listitem [ref=e19] [cursor=pointer]:
+              - generic [ref=e20]:
+                - generic [ref=e22]:
+                  - img
+                - generic [ref=e24]: Overview
+            - listitem [ref=e26] [cursor=pointer]:
+              - generic [ref=e27]:
+                - generic [ref=e28]:
+                  - img
+                - generic [ref=e30]: Map
+            - listitem [ref=e32] [cursor=pointer]:
+              - generic [ref=e33]:
+                - generic [ref=e35]:
+                  - img
+                - generic [ref=e37]: Overview
+            - listitem [ref=e39] [cursor=pointer]:
+              - generic [ref=e40]:
+                - generic [ref=e41]:
+                  - img
+                - generic [ref=e43]: Energy
+            - listitem [ref=e45] [cursor=pointer]:
+              - generic [ref=e46]:
+                - generic [ref=e47]:
+                  - img
+                - generic [ref=e49]: Activity
+            - listitem [ref=e51] [cursor=pointer]:
+              - generic [ref=e52]:
+                - generic [ref=e53]:
+                  - img
+                - generic [ref=e55]: History
+            - listitem [ref=e57] [cursor=pointer]:
+              - generic [ref=e58]:
+                - generic [ref=e59]:
+                  - img
+                - generic [ref=e61]: Calendar
+            - listitem [ref=e63] [cursor=pointer]:
+              - generic [ref=e64]:
+                - generic [ref=e65]:
+                  - img
+                - generic [ref=e67]: Media
+            - listitem [ref=e69] [cursor=pointer]:
+              - generic [ref=e70]:
+                - generic [ref=e71]:
+                  - img
+                - generic [ref=e73]: To-do lists
+        - generic [ref=e74]:
+          - generic:
+            - listitem [ref=e76] [cursor=pointer]:
+              - generic [ref=e77]:
+                - generic [ref=e78]:
+                  - img
+                - generic [ref=e80]: Settings
+                - generic [ref=e81]: "5"
+            - listitem [ref=e83] [cursor=pointer]:
+              - generic [ref=e84]:
+                - generic [ref=e85]:
+                  - img
+                - generic [ref=e87]: Notifications
+                - generic [ref=e88]: "2"
+            - listitem [ref=e90] [cursor=pointer]:
+              - generic [ref=e91]:
+                - generic [ref=e93]: TU
+                - generic [ref=e95]: Test User
+  - generic [ref=e100]:
+    - generic [ref=e103]:
+      - generic [ref=e104]: Overview
+      - generic [ref=e105]:
+        - generic [ref=e106]:
+          - generic:
+            - button "Add to Home Assistant" [ref=e109] [cursor=pointer]:
+              - generic [ref=e111]:
+                - img
+            - generic:
+              - generic: Add device
+              - generic: Create automation
+              - generic: Create area
+              - generic: Add person
+        - button [ref=e114] [cursor=pointer]:
+          - generic [ref=e116]:
+            - img
+        - button [ref=e119] [cursor=pointer]:
+          - generic [ref=e121]:
+            - img
+        - button [ref=e124] [cursor=pointer]:
+          - generic [ref=e126]:
+            - img
+    - generic [ref=e131]:
+      - heading "Welcome Test User" [level=2] [ref=e141]
+      - generic [ref=e142]:
+        - generic [ref=e149]:
+          - paragraph [ref=e156]: Areas
+          - generic [ref=e161]:
+            - button "Living Room" [ref=e162] [cursor=pointer]
+            - generic [ref=e163]:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - img
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: Living Room
+          - generic [ref=e168]:
+            - button "Kitchen" [ref=e169] [cursor=pointer]
+            - generic [ref=e170]:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - img
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: Kitchen
+          - generic [ref=e175]:
+            - button "Bedroom" [ref=e176] [cursor=pointer]
+            - generic [ref=e177]:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - img
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: Bedroom
+          - generic [ref=e182]:
+            - button "Devices" [ref=e183] [cursor=pointer]
+            - generic [ref=e184]:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - img
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: Devices
+        - generic [ref=e190]:
+          - paragraph [ref=e197]: Summaries
+          - generic [ref=e202]:
+            - button "Lights 5 on" [ref=e203] [cursor=pointer]
+            - generic [ref=e204]:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - img
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: Lights
+                      - generic:
+                        - generic: 5 on
+          - generic [ref=e209]:
+            - button "Climate" [ref=e210] [cursor=pointer]
+            - generic [ref=e211]:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - img
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: Climate
+          - generic [ref=e216]:
+            - button "Security 1 disarmed" [ref=e217] [cursor=pointer]
+            - generic [ref=e218]:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - img
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: Security
+                      - generic:
+                        - generic: 1 disarmed
+          - generic [ref=e223]:
+            - button "Weather -24.4 °C · Rainy" [ref=e224] [cursor=pointer]
+            - generic [ref=e225]:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - img
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: Weather
+                      - generic:
+                        - generic:
+                          - generic: "-24.4 °C · Rainy"
