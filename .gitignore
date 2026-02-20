@@ -8,3 +8,4 @@ homeassistant/config/*
 test-results/
 playwright-report/
 tests/.auth.json
+.playwright-cli/
