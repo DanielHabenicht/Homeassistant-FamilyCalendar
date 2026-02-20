@@ -1,0 +1,21 @@
+title: Skylight Calendar Dev Dashboard
+views:
+  - title: Calendar
+    path: calendar
+    cards:
+      - type: custom:skylight-calendar-card
+        title: Family Calendar
+        initial_view: dayGridMonth
+        calendars:
+          - calendar.demo_calendar_1
+        persons:
+          - name: Alice
+            color: "#039be5"
+            icon: mdi:account
+            calendars:
+              - calendar.demo_calendar_1
+          - name: Bob
+            color: "#33b679"
+            icon: mdi:account-outline
+            calendars:
+              - calendar.demo_calendar_2

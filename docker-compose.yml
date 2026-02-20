@@ -1,0 +1,16 @@
+services:
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: skylight-ha
+    restart: unless-stopped
+    privileged: false
+    network_mode: host
+    volumes:
+      # Mount HA configuration
+      - ./homeassistant/config:/config
+      # Mount the built card JS directly into HA's www folder so it is
+      # served at /local/calendar-card.js without restarting the container.
+      # Run `npm run build` (or `npm run dev`) to rebuild after code changes.
+      - ./dist:/config/www
+    environment:
+      - TZ=Europe/Berlin

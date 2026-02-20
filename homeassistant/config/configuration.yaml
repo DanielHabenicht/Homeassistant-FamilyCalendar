@@ -1,0 +1,27 @@
+---
+# Home Assistant configuration for local development
+# The calendar-card.js is served from /local/calendar-card.js
+# because the www/ folder is mounted as the /local/ path in HA.
+
+default_config:
+
+# Enable lovelace in yaml mode for easy card testing
+lovelace:
+  mode: yaml
+  resources:
+    - url: /local/calendar-card.js
+      type: module
+
+# Example demo calendars (using the demo integration)
+# In a real setup replace these with your actual calendar integrations
+demo:
+
+# HTTP configuration (needed for dev behind docker port mapping)
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 127.0.0.1
+    - ::1
+    - 172.16.0.0/12
+    - 192.168.0.0/16
+    - 10.0.0.0/8
