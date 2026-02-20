@@ -4,18 +4,18 @@ views:
     path: calendar
     cards:
       - type: custom:skylight-calendar-card
-        title: Family Calendar
-        initial_view: dayGridMonth
+        title: Calendar
         calendars:
-          - calendar.demo_calendar_1
+          - calendar.calendar_1
+          - calendar.calendar_2
         persons:
-          - name: Alice
-            color: "#039be5"
-            icon: mdi:account
+          - name: Adam
             calendars:
-              - calendar.demo_calendar_1
-          - name: Bob
-            color: "#33b679"
-            icon: mdi:account-outline
+              - calendar.calendar_1
+          - name: Eve
             calendars:
-              - calendar.demo_calendar_2
+              - calendar.calendar_2
+        initial_view: timeGridWeek
+        grid_options:
+          columns: full
+        column_span: 4

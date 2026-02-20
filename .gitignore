@@ -1,9 +1,6 @@
 node_modules/
 dist/
 *.js.map
-homeassistant/config/.storage/
-homeassistant/config/home-assistant.log
-homeassistant/config/home-assistant_v2.db*
-homeassistant/config/.cloud/
-homeassistant/config/deps/
-homeassistant/config/tts/
+homeassistant/config/*
+!homeassistant/config/ui-lovelace.yaml
+!homeassistant/config/configuration.yaml
