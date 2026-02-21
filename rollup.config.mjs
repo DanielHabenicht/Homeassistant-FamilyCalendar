@@ -10,7 +10,7 @@ export default {
   output: {
     file: 'dist/calendar-card.js',
     format: 'es',
-    sourcemap: true,
+    sourcemap: 'inline',
   },
   plugins: [
     replace({
