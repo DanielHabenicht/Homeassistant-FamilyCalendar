@@ -1,13 +1,16 @@
 name: Release
 
 on:
-  release:
-    types: [published]
+  push:
+    tags:
+      - '*'
 
 jobs:
   release:
     name: Release Files
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v1
 
@@ -19,11 +22,10 @@ jobs:
 
       # Upload build file to the releas as an asset.
       - name: Upload zip to release
-        uses: svenstaro/upload-release-action@v1-release
-
+        uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: dist/familycalendar-card.js
-          asset_name: familycalendar-card.js
+          file: dist/*
           tag: ${{ github.ref }}
           overwrite: true
+          file_glob: true
