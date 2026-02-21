@@ -6,9 +6,9 @@ import postcss from 'rollup-plugin-postcss';
 
 process.env.SASS_SILENCE_DEPRECATIONS = 'legacy-js-api';
 export default {
-  input: 'src/calendar-card.ts',
+  input: 'src/familycalendar-card.ts',
   output: {
-    file: 'dist/calendar-card.js',
+    file: 'dist/familycalendar-card.js',
     format: 'es',
     sourcemap: 'inline',
   },

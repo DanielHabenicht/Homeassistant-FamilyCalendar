@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * Playwright configuration for Skylight Calendar Card e2e tests.
+ * Playwright configuration for FamilyCalendar for Homeassistant e2e tests.
  *
  * Expects Home Assistant to be running at http://localhost:8123.
  * Start it with: docker compose up -d && npm run build

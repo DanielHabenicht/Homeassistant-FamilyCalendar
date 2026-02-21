@@ -1,5 +1,5 @@
 /**
- * Types for the Home Assistant Skylight Calendar Card
+ * Types for FamilyCalendar for Homeassistant
  */
 
 // Home Assistant types

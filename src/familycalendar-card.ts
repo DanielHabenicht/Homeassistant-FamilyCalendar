@@ -34,12 +34,12 @@ import {
   formatDateLocal,
   getPreferredLocale,
 } from './utils.js';
-import styles from './calendar-card.scss';
+import styles from './familycalendar-card.scss';
 
 // ---------------------------------------------------------------------------
 // Card editor (simple config UI)
 // ---------------------------------------------------------------------------
-import './calendar-card-editor.js';
+import './familycalendar-card-editor.js';
 
 // ---------------------------------------------------------------------------
 // Main card element

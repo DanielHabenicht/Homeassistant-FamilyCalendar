@@ -1,5 +1,5 @@
 {
-  "name": "homeassistant-skylight-calendar-card",
+  "name": "homeassistant-familycalendar-for-homeassistant",
   "version": "1.0.0",
   "description": "A Home Assistant custom calendar card with day/week/month views and person selectors",
   "keywords": [

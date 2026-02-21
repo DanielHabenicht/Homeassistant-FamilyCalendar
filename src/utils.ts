@@ -1,5 +1,5 @@
 /**
- * Utility functions for the Skylight Calendar Card
+ * Utility functions for FamilyCalendar for Homeassistant
  */
 
 import type { CalendarCardConfig, HomeAssistant, PersonGroup } from './types.js';

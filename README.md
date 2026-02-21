@@ -1,4 +1,4 @@
-# Skylight – Home Assistant Calendar Card
+# FamilyCalendar for Homeassistant
 
 A custom [Home Assistant](https://www.home-assistant.io/) Lovelace card that displays calendar entities with **day / week / month** views, person-based visibility toggles and click-to-create event support.
 
@@ -8,13 +8,13 @@ Built with [FullCalendar.js](https://fullcalendar.io/) and [Lit](https://lit.dev
 
 ## Features
 
-| Feature | Details |
-|---|---|
-| **Views** | Month (`dayGridMonth`), Week (`timeGridWeek`), Day (`timeGridDay`) |
-| **Person selectors** | Chips above the calendar to show/hide calendars grouped by person |
-| **Click to create** | Click any time slot or day cell to open a pre-filled new-event dialog |
-| **Calendar picker** | Choose which HA calendar the new event is created in |
-| **Card editor** | Full Lovelace UI editor – no YAML required |
+| Feature              | Details                                                               |
+| -------------------- | --------------------------------------------------------------------- |
+| **Views**            | Month (`dayGridMonth`), Week (`timeGridWeek`), Day (`timeGridDay`)    |
+| **Person selectors** | Chips above the calendar to show/hide calendars grouped by person     |
+| **Click to create**  | Click any time slot or day cell to open a pre-filled new-event dialog |
+| **Calendar picker**  | Choose which HA calendar the new event is created in                  |
+| **Card editor**      | Full Lovelace UI editor – no YAML required                            |
 
 ---
 
@@ -55,9 +55,9 @@ npm run dev   # watch mode – rebuilds on every save
 ## Card Configuration
 
 ```yaml
-type: custom:skylight-calendar-card
-title: Family Calendar           # optional – card header title
-initial_view: dayGridMonth       # dayGridMonth | timeGridWeek | timeGridDay
+type: custom:familycalendar-for-homeassistant
+title: Family Calendar # optional – card header title
+initial_view: dayGridMonth # dayGridMonth | timeGridWeek | timeGridDay
 
 # Simple list of calendar entity IDs (no grouping)
 calendars:
@@ -66,13 +66,13 @@ calendars:
 # Group calendars under a person (shows person-selector chips)
 persons:
   - name: Alice
-    color: "#039be5"             # optional hex color for Alice's events
-    icon: mdi:account            # optional MDI icon for the chip
+    color: '#039be5' # optional hex color for Alice's events
+    icon: mdi:account # optional MDI icon for the chip
     calendars:
       - calendar.alice_work
       - calendar.alice_personal
   - name: Bob
-    color: "#33b679"
+    color: '#33b679'
     calendars:
       - calendar.bob_work
 ```
@@ -83,13 +83,13 @@ persons:
 
 ## Scripts
 
-| Command | Description |
-|---|---|
-| `npm run build` | Production bundle → `dist/calendar-card.js` |
-| `npm run dev` | Watch mode (rebuilds on save) |
-| `npm run format` | Format source files with Prettier |
-| `npm run format:check` | Check formatting (CI) |
-| `npm run type-check` | TypeScript type checking without emitting |
+| Command                | Description                                 |
+| ---------------------- | ------------------------------------------- |
+| `npm run build`        | Production bundle → `dist/calendar-card.js` |
+| `npm run dev`          | Watch mode (rebuilds on save)               |
+| `npm run format`       | Format source files with Prettier           |
+| `npm run format:check` | Check formatting (CI)                       |
+| `npm run type-check`   | TypeScript type checking without emitting   |
 
 ---
 

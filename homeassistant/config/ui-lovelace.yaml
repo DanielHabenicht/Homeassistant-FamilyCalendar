@@ -1,9 +1,9 @@
-title: Skylight Calendar Dev Dashboard
+title: FamilyCalendar for Homeassistant Dev Dashboard
 views:
   - title: Calendar
     path: calendar
     cards:
-      - type: custom:skylight-calendar-card
+      - type: custom:familycalendar-for-homeassistant
         title: Calendar
         calendars:
           - calendar.calendar_1

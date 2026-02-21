@@ -80,10 +80,7 @@ test.describe('FamilyCalendar for Homeassistant', () => {
     // until FullCalendar has mounted its view harness
     await expect(async () => {
       const hasFC = await card.evaluate(
-        (el) =>
-          !!(el as HTMLElement & { shadowRoot: ShadowRoot }).shadowRoot?.querySelector(
-            '.fc-view-harness',
-          ),
+        (el) => !!(el as HTMLElement & { shadowRoot: ShadowRoot }).shadowRoot?.querySelector('.fc-view-harness'),
       );
       expect(hasFC).toBe(true);
     }).toPass({ timeout: 20_000 });
@@ -129,7 +126,10 @@ test.describe('FamilyCalendar for Homeassistant', () => {
       const hasKnownEvent = titles.some(
         (t) => t.includes('Current Event') || t.includes('Future Event'),
       );
-      expect(hasKnownEvent, `Expected demo events, got: ${JSON.stringify(titles)}`).toBe(true);
+      expect(
+        hasKnownEvent,
+        `Expected demo events, got: ${JSON.stringify(titles)}`,
+      ).toBe(true);
     }).toPass({ timeout: 30_000 });
   });
 
@@ -170,18 +170,30 @@ test.describe('FamilyCalendar for Homeassistant', () => {
   test('can switch to month view and back to week view', async ({ page }) => {
     // Switch to month
     await shadowClick(page, 'button.fc-dayGridMonth-button');
-    const monthVisible = await shadowQuery(page, '.fc-daygrid-body', (el) => el !== null);
+    const monthVisible = await shadowQuery(
+      page,
+      '.fc-daygrid-body',
+      (el) => el !== null,
+    );
     expect(monthVisible).toBe(true);
 
     // Switch back to week
     await shadowClick(page, 'button.fc-timeGridWeek-button');
-    const weekVisible = await shadowQuery(page, '.fc-timegrid-body', (el) => el !== null);
+    const weekVisible = await shadowQuery(
+      page,
+      '.fc-timegrid-body',
+      (el) => el !== null,
+    );
     expect(weekVisible).toBe(true);
   });
 
   test('can switch to day view', async ({ page }) => {
     await shadowClick(page, 'button.fc-timeGridDay-button');
-    const dayVisible = await shadowQuery(page, '.fc-timegrid-body', (el) => el !== null);
+    const dayVisible = await shadowQuery(
+      page,
+      '.fc-timegrid-body',
+      (el) => el !== null,
+    );
     expect(dayVisible).toBe(true);
   });
 
@@ -212,7 +224,11 @@ test.describe('FamilyCalendar for Homeassistant', () => {
     );
     expect(hasTitleInput).toBe(true);
 
-    const hasCalendarSelect = await shadowQuery(page, '.dialog select', (el) => el !== null);
+    const hasCalendarSelect = await shadowQuery(
+      page,
+      '.dialog select',
+      (el) => el !== null,
+    );
     expect(hasCalendarSelect).toBe(true);
 
     // Dismiss with Cancel
@@ -225,3 +241,4 @@ test.describe('FamilyCalendar for Homeassistant', () => {
     }).toPass({ timeout: 3_000 });
   });
 });
+
