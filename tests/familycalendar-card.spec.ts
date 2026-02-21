@@ -22,7 +22,7 @@ const CALENDAR_URL = '/lovelace/calendar';
 
 // ---------------------------------------------------------------------------
 // Shadow DOM helpers
-// All card content lives inside familycalendar-for-homeassistant's shadow root.
+// All card content lives inside familycalendar-card's shadow root.
 // ---------------------------------------------------------------------------
 
 /** Query the card's shadow root and return a value from it. */
@@ -31,7 +31,7 @@ async function shadowQuery<T>(
   selector: string,
   extract: (el: Element | null) => T,
 ): Promise<T> {
-  return page.locator('familycalendar-for-homeassistant').evaluate(
+  return page.locator('familycalendar-card').evaluate(
     (card, { selector, extract }) =>
       // eslint-disable-next-line no-new-func
       new Function('el', `return (${extract})(el)`)(
@@ -47,7 +47,7 @@ async function shadowQueryAll<T>(
   selector: string,
   extract: (el: Element) => T,
 ): Promise<T[]> {
-  return page.locator('familycalendar-for-homeassistant').evaluate(
+  return page.locator('familycalendar-card').evaluate(
     (card, { selector, extract }) =>
       Array.from((card.shadowRoot as ShadowRoot).querySelectorAll(selector)).map(
         // eslint-disable-next-line no-new-func
@@ -59,7 +59,7 @@ async function shadowQueryAll<T>(
 
 /** Click an element inside the card's shadow root by CSS selector. */
 async function shadowClick(page: Page, selector: string): Promise<void> {
-  await page.locator('familycalendar-for-homeassistant').evaluate((card, sel) => {
+  await page.locator('familycalendar-card').evaluate((card, sel) => {
     const el = (card.shadowRoot as ShadowRoot).querySelector(sel);
     if (!el) throw new Error(`Shadow element not found: ${sel}`);
     (el as HTMLElement).click();
@@ -74,13 +74,16 @@ test.describe('FamilyCalendar for Homeassistant', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto(CALENDAR_URL);
     // Playwright's locator engine pierces HA's shadow DOM layers automatically
-    const card = page.locator('familycalendar-for-homeassistant');
+    const card = page.locator('familycalendar-card');
     await card.waitFor({ state: 'attached', timeout: 30_000 });
     // Poll via evaluate (which has direct access to the element's shadowRoot)
     // until FullCalendar has mounted its view harness
     await expect(async () => {
       const hasFC = await card.evaluate(
-        (el) => !!(el as HTMLElement & { shadowRoot: ShadowRoot }).shadowRoot?.querySelector('.fc-view-harness'),
+        (el) =>
+          !!(el as HTMLElement & { shadowRoot: ShadowRoot }).shadowRoot?.querySelector(
+            '.fc-view-harness',
+          ),
       );
       expect(hasFC).toBe(true);
     }).toPass({ timeout: 20_000 });
@@ -111,7 +114,7 @@ test.describe('FamilyCalendar for Homeassistant', () => {
   // 3. Demo events are visible
   // -------------------------------------------------------------------------
   test('displays demo calendar events in the week view', async ({ page }) => {
-    const card = page.locator('familycalendar-for-homeassistant');
+    const card = page.locator('familycalendar-card');
 
     // Poll until FullCalendar has fetched and rendered events from the HA API.
     // Uses card.evaluate so it can reach into the shadow root.
@@ -126,10 +129,7 @@ test.describe('FamilyCalendar for Homeassistant', () => {
       const hasKnownEvent = titles.some(
         (t) => t.includes('Current Event') || t.includes('Future Event'),
       );
-      expect(
-        hasKnownEvent,
-        `Expected demo events, got: ${JSON.stringify(titles)}`,
-      ).toBe(true);
+      expect(hasKnownEvent, `Expected demo events, got: ${JSON.stringify(titles)}`).toBe(true);
     }).toPass({ timeout: 30_000 });
   });
 
@@ -170,30 +170,18 @@ test.describe('FamilyCalendar for Homeassistant', () => {
   test('can switch to month view and back to week view', async ({ page }) => {
     // Switch to month
     await shadowClick(page, 'button.fc-dayGridMonth-button');
-    const monthVisible = await shadowQuery(
-      page,
-      '.fc-daygrid-body',
-      (el) => el !== null,
-    );
+    const monthVisible = await shadowQuery(page, '.fc-daygrid-body', (el) => el !== null);
     expect(monthVisible).toBe(true);
 
     // Switch back to week
     await shadowClick(page, 'button.fc-timeGridWeek-button');
-    const weekVisible = await shadowQuery(
-      page,
-      '.fc-timegrid-body',
-      (el) => el !== null,
-    );
+    const weekVisible = await shadowQuery(page, '.fc-timegrid-body', (el) => el !== null);
     expect(weekVisible).toBe(true);
   });
 
   test('can switch to day view', async ({ page }) => {
     await shadowClick(page, 'button.fc-timeGridDay-button');
-    const dayVisible = await shadowQuery(
-      page,
-      '.fc-timegrid-body',
-      (el) => el !== null,
-    );
+    const dayVisible = await shadowQuery(page, '.fc-timegrid-body', (el) => el !== null);
     expect(dayVisible).toBe(true);
   });
 
@@ -203,7 +191,7 @@ test.describe('FamilyCalendar for Homeassistant', () => {
   test('clicking a time slot opens the new-event creation dialog', async ({ page }) => {
     // Playwright's chained locators pierce shadow DOM — click an actual
     // FullCalendar time slot so the dateClick callback fires.
-    const card = page.locator('familycalendar-for-homeassistant');
+    const card = page.locator('familycalendar-card');
     const timeSlot = card.locator('.fc-timegrid-slot-lane').first();
     await timeSlot.click();
 
@@ -224,11 +212,7 @@ test.describe('FamilyCalendar for Homeassistant', () => {
     );
     expect(hasTitleInput).toBe(true);
 
-    const hasCalendarSelect = await shadowQuery(
-      page,
-      '.dialog select',
-      (el) => el !== null,
-    );
+    const hasCalendarSelect = await shadowQuery(page, '.dialog select', (el) => el !== null);
     expect(hasCalendarSelect).toBe(true);
 
     // Dismiss with Cancel
@@ -241,4 +225,3 @@ test.describe('FamilyCalendar for Homeassistant', () => {
     }).toPass({ timeout: 3_000 });
   });
 });
-

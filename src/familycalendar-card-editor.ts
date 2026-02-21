@@ -354,4 +354,4 @@ class FamilyCalendarForHomeassistantEditor extends LitElement {
   `;
 }
 
-customElements.define('familycalendar-for-homeassistant-editor', FamilyCalendarForHomeassistantEditor);
+customElements.define('familycalendar-card-editor', FamilyCalendarForHomeassistantEditor);

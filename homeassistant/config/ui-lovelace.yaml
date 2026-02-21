@@ -3,7 +3,7 @@ views:
   - title: Calendar
     path: calendar
     cards:
-      - type: custom:familycalendar-for-homeassistant
+      - type: custom:familycalendar-card
         title: Calendar
         calendars:
           - calendar.calendar_1

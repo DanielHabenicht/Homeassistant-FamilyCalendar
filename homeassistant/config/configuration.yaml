@@ -9,7 +9,7 @@ default_config:
 lovelace:
   mode: yaml
   resources:
-    - url: /local/calendar-card.js
+    - url: /local/familycalendar-card.js
       type: module
 
 # Example demo calendars (using the demo integration)

@@ -55,7 +55,7 @@ npm run dev   # watch mode – rebuilds on every save
 ## Card Configuration
 
 ```yaml
-type: custom:familycalendar-for-homeassistant
+type: custom:familycalendar-card
 title: Family Calendar # optional – card header title
 initial_view: dayGridMonth # dayGridMonth | timeGridWeek | timeGridDay
 

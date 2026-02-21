@@ -141,12 +141,12 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
   }
 
   static getConfigElement() {
-    return document.createElement('familycalendar-for-homeassistant-editor');
+    return document.createElement('familycalendar-card-editor');
   }
 
   static getStubConfig() {
     return {
-      type: 'custom:familycalendar-for-homeassistant',
+      type: 'custom:familycalendar-card',
       title: 'Calendar',
       calendars: [],
       persons: [],
@@ -572,7 +572,7 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
   static styles = unsafeCSS(styles);
 }
 
-customElements.define('familycalendar-for-homeassistant', FamilyCalendarForHomeassistantCard);
+customElements.define('familycalendar-card', FamilyCalendarForHomeassistantCard);
 
 // Register card in HA's custom card registry
 (window as unknown as Record<string, unknown>)['customCards'] =
@@ -585,7 +585,7 @@ customElements.define('familycalendar-for-homeassistant', FamilyCalendarForHomea
     preview: boolean;
   }>
 ).push({
-  type: 'familycalendar-for-homeassistant',
+  type: 'familycalendar-card',
   name: 'FamilyCalendar for Homeassistant',
   description: 'A calendar card with day/week/month views and person selectors',
   preview: false,

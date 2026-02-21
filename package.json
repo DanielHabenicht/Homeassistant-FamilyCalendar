@@ -1,5 +1,5 @@
 {
-  "name": "homeassistant-familycalendar-for-homeassistant",
+  "name": "homeassistant-familycalendar-card",
   "version": "1.0.0",
   "description": "A Home Assistant custom calendar card with day/week/month views and person selectors",
   "keywords": [
