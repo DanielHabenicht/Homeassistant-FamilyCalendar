@@ -434,7 +434,7 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
     return html`
       <ha-card>
         <div class="card-header">
-          <span class="card-title">Tester${title}</span>
+          <span class="card-title">${title}</span>
         </div>
 
         ${groups.length > 1
