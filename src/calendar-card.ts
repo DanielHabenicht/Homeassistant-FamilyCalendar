@@ -8,9 +8,17 @@
  *  - Configurable calendar list with optional person grouping
  */
 
-import { LitElement, html, unsafeCSS, type PropertyValues, type TemplateResult, nothing } from 'lit';
+import {
+  LitElement,
+  html,
+  unsafeCSS,
+  type PropertyValues,
+  type TemplateResult,
+  nothing,
+} from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { Calendar } from '@fullcalendar/core';
+import allLocales from '@fullcalendar/core/locales-all';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
@@ -24,6 +32,7 @@ import {
   fetchCalendarEvents,
   formatDateTimeLocal,
   formatDateLocal,
+  getPreferredLocale,
 } from './utils.js';
 import styles from './calendar-card.scss';
 
@@ -57,6 +66,61 @@ class SkylightCalendarCard extends LitElement {
 
   // FullCalendar instance is created once and reused
   private _fcInitialized = false;
+
+  private _getLocale(): string {
+    return getPreferredLocale(this.hass);
+  }
+
+  private _getText(
+    key:
+      | 'newEvent'
+      | 'title'
+      | 'placeholder'
+      | 'allDay'
+      | 'start'
+      | 'end'
+      | 'calendar'
+      | 'cancel'
+      | 'save'
+      | 'saving'
+      | 'titleError'
+      | 'calendarError',
+  ): string {
+    const locale = this._getLocale().toLowerCase();
+    const isGerman = locale.startsWith('de');
+
+    const de: Record<typeof key, string> = {
+      newEvent: 'Neuer Termin',
+      title: 'Titel',
+      placeholder: 'Termintitel',
+      allDay: 'Ganztägig',
+      start: 'Start',
+      end: 'Ende',
+      calendar: 'Kalender',
+      cancel: 'Abbrechen',
+      save: 'Speichern',
+      saving: 'Speichere…',
+      titleError: 'Bitte einen Titel eingeben.',
+      calendarError: 'Bitte einen Kalender auswählen.',
+    };
+
+    const en: Record<typeof key, string> = {
+      newEvent: 'New Event',
+      title: 'Title',
+      placeholder: 'Event title',
+      allDay: 'All day',
+      start: 'Start',
+      end: 'End',
+      calendar: 'Calendar',
+      cancel: 'Cancel',
+      save: 'Save',
+      saving: 'Saving…',
+      titleError: 'Please enter a title.',
+      calendarError: 'Please select a calendar.',
+    };
+
+    return (isGerman ? de : en)[key];
+  }
 
   static get properties() {
     return {
@@ -155,8 +219,11 @@ class SkylightCalendarCard extends LitElement {
     if (!this._config) return;
 
     const self = this;
+    const locale = this._getLocale();
     this._calendar = new Calendar(container, {
       plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
+      locales: allLocales,
+      locale,
       initialView: this._config.initial_view ?? 'dayGridMonth',
       headerToolbar: {
         left: 'prev,next today',
@@ -295,11 +362,11 @@ class SkylightCalendarCard extends LitElement {
 
   private async _saveEvent() {
     if (!this._newEventTitle.trim()) {
-      this._errorMessage = 'Please enter a title.';
+      this._errorMessage = this._getText('titleError');
       return;
     }
     if (!this._newEventCalendar) {
-      this._errorMessage = 'Please select a calendar.';
+      this._errorMessage = this._getText('calendarError');
       return;
     }
 
@@ -347,6 +414,12 @@ class SkylightCalendarCard extends LitElement {
         this._initCalendar(container);
       }
     } else if (this._fcInitialized && changed.has('hass')) {
+      const previousHass = changed.get('hass') as HomeAssistant | undefined;
+      const previousLocale = getPreferredLocale(previousHass);
+      const currentLocale = this._getLocale();
+      if (previousLocale !== currentLocale) {
+        this._calendar?.setOption('locale', currentLocale);
+      }
       // Refetch when hass updates (e.g. entity state changes)
       this._calendar?.getEventSources().forEach((src) => src.refetch());
     }
@@ -361,7 +434,7 @@ class SkylightCalendarCard extends LitElement {
     return html`
       <ha-card>
         <div class="card-header">
-          <span class="card-title">${title}</span>
+          <span class="card-title">Tester${title}</span>
         </div>
 
         ${groups.length > 1
@@ -399,18 +472,19 @@ class SkylightCalendarCard extends LitElement {
   private _renderDialog(): TemplateResult {
     const allIds = getAllCalendarIds(this._config!);
     const inputType = this._newEventAllDay ? 'date' : 'datetime-local';
+    const locale = this._getLocale();
 
     return html`
       <div class="dialog-overlay" @click=${this._closeDialog}>
         <div class="dialog" @click=${(e: Event) => e.stopPropagation()}>
-          <h3 class="dialog-title">New Event</h3>
+          <h3 class="dialog-title">${this._getText('newEvent')}</h3>
 
           <label class="dialog-label">
-            Title
+            ${this._getText('title')}
             <input
               class="dialog-input"
               type="text"
-              placeholder="Event title"
+              placeholder="${this._getText('placeholder')}"
               .value=${this._newEventTitle}
               @input=${(e: Event) => (this._newEventTitle = (e.target as HTMLInputElement).value)}
               @keydown=${(e: KeyboardEvent) => e.key === 'Enter' && this._saveEvent()}
@@ -427,31 +501,33 @@ class SkylightCalendarCard extends LitElement {
                 if (this._newEventData) this._openNewEventDialog(this._newEventData);
               }}
             />
-            All day
+            ${this._getText('allDay')}
           </label>
 
           <label class="dialog-label">
-            Start
+            ${this._getText('start')}
             <input
               class="dialog-input"
               type="${inputType}"
+              lang="${locale}"
               .value=${this._newEventStart}
               @input=${(e: Event) => (this._newEventStart = (e.target as HTMLInputElement).value)}
             />
           </label>
 
           <label class="dialog-label">
-            End
+            ${this._getText('end')}
             <input
               class="dialog-input"
               type="${inputType}"
+              lang="${locale}"
               .value=${this._newEventEnd}
               @input=${(e: Event) => (this._newEventEnd = (e.target as HTMLInputElement).value)}
             />
           </label>
 
           <label class="dialog-label">
-            Calendar
+            ${this._getText('calendar')}
             <select
               class="dialog-input"
               .value=${this._newEventCalendar}
@@ -472,14 +548,14 @@ class SkylightCalendarCard extends LitElement {
 
           <div class="dialog-actions">
             <button class="dialog-btn dialog-btn--cancel" @click=${this._closeDialog}>
-              Cancel
+              ${this._getText('cancel')}
             </button>
             <button
               class="dialog-btn dialog-btn--save"
               ?disabled=${this._saving}
               @click=${this._saveEvent}
             >
-              ${this._saving ? 'Saving…' : 'Save'}
+              ${this._saving ? this._getText('saving') : this._getText('save')}
             </button>
           </div>
         </div>

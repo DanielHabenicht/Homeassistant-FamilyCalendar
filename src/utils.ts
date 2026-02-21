@@ -120,3 +120,17 @@ export function formatDateLocal(date: Date): string {
   const pad = (n: number) => String(n).padStart(2, '0');
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
+
+/**
+ * Resolve the preferred locale from Home Assistant, with browser fallback.
+ */
+export function getPreferredLocale(hass?: HomeAssistant): string {
+  const hassLocale = hass?.locale?.language;
+  const browserLocale =
+    typeof navigator !== 'undefined' && Array.isArray(navigator.languages)
+      ? (navigator.languages[0] ?? navigator.language)
+      : undefined;
+
+  const locale = (hassLocale ?? browserLocale ?? 'en').trim();
+  return locale.replace(/_/g, '-');
+}
