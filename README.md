@@ -32,8 +32,8 @@ Built with [FullCalendar.js](https://fullcalendar.io/) and [Lit](https://lit.dev
 # 1. Install dependencies
 npm install
 
-# 2. Build the card (output: dist/calendar-card.js)
-npm run build
+# 2. Start the card dev server (serves dist/familycalendar-card.js on port 4000)
+npm run dev
 
 # 3. Start Home Assistant
 docker compose up -d
@@ -41,15 +41,9 @@ docker compose up -d
 # Open http://localhost:8123 and complete the onboarding.
 ```
 
-For live rebuilding while you edit source files:
-
-```bash
-npm run dev   # watch mode – rebuilds on every save
-```
-
-> The `dist/` folder is mounted directly into the HA container at `/config/www/`,
-> so a rebuild is all you need — no container restart required.
-> Reload the HA browser tab (Ctrl+Shift+R) to pick up the new bundle.
+The card resource is loaded from `http://localhost:4000/familycalendar-card.js`
+as configured in `homeassistant/config/configuration.yaml`.
+Reload the HA browser tab (Ctrl+Shift+R) after changes.
 
 ---
 
@@ -87,7 +81,7 @@ persons:
 | Command                | Description                                 |
 | ---------------------- | ------------------------------------------- |
 | `npm run build`        | Production bundle → `dist/calendar-card.js` |
-| `npm run dev`          | Watch mode (rebuilds on save)               |
+| `npm run dev`          | Watch mode + local dev server on `:4000`    |
 | `npm run format`       | Format source files with Prettier           |
 | `npm run format:check` | Check formatting (CI)                       |
 | `npm run type-check`   | TypeScript type checking without emitting   |
