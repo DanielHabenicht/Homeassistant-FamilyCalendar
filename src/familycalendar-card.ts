@@ -8,7 +8,14 @@
  *  - Configurable calendar list with optional person grouping
  */
 
-import { LitElement, html, unsafeCSS, type TemplateResult, nothing } from 'lit';
+import {
+  LitElement,
+  html,
+  unsafeCSS,
+  type TemplateResult,
+  type PropertyValues,
+  nothing,
+} from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { Calendar } from '@fullcalendar/core';
 import allLocales from '@fullcalendar/core/locales-all';
@@ -60,6 +67,7 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
   @state() private _errorMessage = '';
 
   private _calendar?: Calendar;
+  private _calendarContainer?: HTMLDivElement;
 
   // FullCalendar instance is created once and reused
   private _fcInitialized = false;
@@ -245,6 +253,13 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
   private _initCalendar(container: HTMLDivElement) {
     if (!this._config) return;
 
+    // Workaround: Home Assistant can reattach this card in a new shadow root after tab/view
+    // switches. In that case FullCalendar's runtime-injected styles may not follow, so we
+    // mirror the global FullCalendar stylesheet into this shadow root before rendering.
+    this._ensureFullCalendarStyles();
+
+    this._calendarContainer = container;
+
     const self = this;
     const locale = this._getLocale();
     this._calendar = new Calendar(container, {
@@ -297,6 +312,50 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
     this._calendar.render();
     container.addEventListener('click', this._onCalendarContainerClick, true);
     this._fcInitialized = true;
+  }
+
+  private _teardownCalendar() {
+    this._calendarContainer?.removeEventListener('click', this._onCalendarContainerClick, true);
+    this._calendar?.destroy();
+    this._calendar = undefined;
+    this._calendarContainer = undefined;
+    this._fcInitialized = false;
+  }
+
+  private _ensureFullCalendarStyles() {
+    if (!this.shadowRoot) return;
+
+    const rootStyle = document.querySelector<HTMLStyleElement>('style[data-fullcalendar]');
+    if (!rootStyle) return;
+
+    let rootCssText = '';
+    try {
+      const sheet = rootStyle.sheet as CSSStyleSheet | null;
+      if (sheet?.cssRules) {
+        rootCssText = Array.from(sheet.cssRules)
+          .map((rule) => rule.cssText)
+          .join('\n');
+      }
+    } catch {
+      rootCssText = '';
+    }
+
+    if (!rootCssText) {
+      rootCssText = rootStyle.textContent ?? '';
+    }
+
+    if (!rootCssText) return;
+
+    let shadowStyle = this.shadowRoot.querySelector<HTMLStyleElement>('style[data-fullcalendar]');
+    if (!shadowStyle) {
+      shadowStyle = document.createElement('style');
+      shadowStyle.setAttribute('data-fullcalendar', '');
+      this.shadowRoot.insertBefore(shadowStyle, this.shadowRoot.firstChild);
+    }
+
+    if (shadowStyle.textContent !== rootCssText) {
+      shadowStyle.textContent = rootCssText;
+    }
   }
 
   private _onCalendarContainerClick = (event: Event) => {
@@ -361,6 +420,7 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
   private _refreshCalendarSources() {
     if (!this._calendar || !this._config) return;
 
+    if (!this.isConnected) return;
     // Remove all existing sources and re-add with current visibility filter
     this._calendar.getEventSources().forEach((src) => src.remove());
     const allIds = getAllCalendarIds(this._config);
@@ -605,14 +665,31 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
   // Lit lifecycle
   // -------------------------------------------------------------------------
 
+  disconnectedCallback() {
+    this._teardownCalendar();
+    super.disconnectedCallback();
+  }
+
   protected updated(changed: PropertyValues) {
     super.updated(changed);
-    if (!this._fcInitialized && this._config && this.hass) {
-      const container = this.shadowRoot?.querySelector<HTMLDivElement>('#fc-container');
-      if (container) {
-        this._initCalendar(container);
-      }
-    } else if (this._fcInitialized && changed.has('hass')) {
+    if (!this.isConnected) return;
+    if (!this._config || !this.hass) return;
+
+    const container = this.shadowRoot?.querySelector<HTMLDivElement>('#fc-container');
+    if (!container) return;
+
+    if (!this._fcInitialized) {
+      this._initCalendar(container);
+      return;
+    }
+
+    if (this._calendarContainer !== container) {
+      this._teardownCalendar();
+      this._initCalendar(container);
+      return;
+    }
+
+    if (changed.has('hass')) {
       const previousHass = changed.get('hass') as HomeAssistant | undefined;
       const previousLocale = getPreferredLocale(previousHass);
       const currentLocale = this._getLocale();
