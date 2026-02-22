@@ -1,7 +1,7 @@
 ---
 # Home Assistant configuration for local development
-# The calendar-card.js is served from /local/calendar-card.js
-# because the www/ folder is mounted as the /local/ path in HA.
+# The familycalendar-card.js bundle is served from the local dev server
+# running on port 4000.
 
 default_config:
 
@@ -9,7 +9,7 @@ default_config:
 lovelace:
   mode: yaml
   resources:
-    - url: /local/familycalendar-card.js
+    - url: http://localhost:4000/familycalendar-card.js
       type: module
 
 # Example demo calendars (using the demo integration)
