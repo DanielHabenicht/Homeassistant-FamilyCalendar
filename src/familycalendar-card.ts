@@ -55,6 +55,7 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
   /** Controls the new-event creation dialog */
   @state() private _newEventData?: NewEventData;
   @state() private _newEventTitle = '';
+  @state() private _newEventDescription = '';
   @state() private _newEventStart = '';
   @state() private _newEventEnd = '';
   @state() private _newEventCalendar = '';
@@ -100,6 +101,8 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
       | 'editEvent'
       | 'title'
       | 'placeholder'
+      | 'description'
+      | 'descriptionPlaceholder'
       | 'allDay'
       | 'start'
       | 'end'
@@ -127,6 +130,8 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
       editEvent: 'Termin bearbeiten',
       title: 'Titel',
       placeholder: 'Termintitel',
+      description: 'Beschreibung',
+      descriptionPlaceholder: 'Beschreibung eingeben (optional)',
       allDay: 'Ganztägig',
       start: 'Start',
       end: 'Ende',
@@ -152,6 +157,8 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
       editEvent: 'Edit Event',
       title: 'Title',
       placeholder: 'Event title',
+      description: 'Description',
+      descriptionPlaceholder: 'Enter description (optional)',
       allDay: 'All day',
       start: 'Start',
       end: 'End',
@@ -494,6 +501,7 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
     this._editingEventUid = '';
     this._newEventData = data;
     this._newEventTitle = '';
+    this._newEventDescription = '';
     this._newEventAllDay = data.allDay;
     if (data.allDay) {
       this._newEventStart = formatDateLocal(data.start);
@@ -538,6 +546,9 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
     }
 
     this._newEventCalendar = entityId;
+    const description =
+      typeof extendedProps.description === 'string' ? extendedProps.description : '';
+    this._newEventDescription = description;
     this._errorMessage = '';
   }
 
@@ -573,6 +584,7 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
     this._dialogMode = 'create';
     this._editingEventEntityId = '';
     this._editingEventUid = '';
+    this._newEventDescription = '';
     this._calendar?.unselect();
   }
 
@@ -622,6 +634,10 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
           summary: this._newEventTitle.trim(),
         };
 
+        if (this._newEventDescription.trim()) {
+          serviceData.description = this._newEventDescription.trim();
+        }
+
         if (this._newEventAllDay) {
           serviceData.start_date = startVal;
           serviceData.end_date = endVal;
@@ -632,19 +648,27 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
 
         await this._callCalendarServiceWithFallback(['edit_event', 'update_event'], serviceData);
       } else if (this._newEventAllDay) {
-        await this.hass.callService('calendar', 'create_event', {
+        const allDayData: Record<string, unknown> = {
           entity_id: this._newEventCalendar,
           summary: this._newEventTitle.trim(),
           start_date: startVal,
           end_date: endVal,
-        });
+        };
+        if (this._newEventDescription.trim()) {
+          allDayData.description = this._newEventDescription.trim();
+        }
+        await this.hass.callService('calendar', 'create_event', allDayData);
       } else {
-        await this.hass.callService('calendar', 'create_event', {
+        const timedData: Record<string, unknown> = {
           entity_id: this._newEventCalendar,
           summary: this._newEventTitle.trim(),
           start_date_time: startVal,
           end_date_time: endVal,
-        });
+        };
+        if (this._newEventDescription.trim()) {
+          timedData.description = this._newEventDescription.trim();
+        }
+        await this.hass.callService('calendar', 'create_event', timedData);
       }
 
       this._closeDialog();
@@ -797,6 +821,17 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
               @input=${(e: Event) => (this._newEventTitle = (e.target as HTMLInputElement).value)}
               @keydown=${(e: KeyboardEvent) => e.key === 'Enter' && this._saveEvent()}
             />
+          </label>
+
+          <label class="dialog-label">
+            ${this._getText('description')}
+            <textarea
+              class="dialog-input dialog-textarea"
+              placeholder="${this._getText('descriptionPlaceholder')}"
+              .value=${this._newEventDescription}
+              @input=${(e: Event) =>
+                (this._newEventDescription = (e.target as HTMLTextAreaElement).value)}
+            ></textarea>
           </label>
 
           <label class="dialog-label dialog-checkbox-label">
