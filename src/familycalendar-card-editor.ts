@@ -39,9 +39,10 @@ class FamilyCalendarForHomeassistantEditor extends LitElement {
   }
 
   private _setView(e: Event) {
+    const value = this._readSelectValue(e);
     this._dispatchConfig({
       ...this._config!,
-      initial_view: this._readValue(e) as CalendarCardConfig['initial_view'],
+      initial_view: value as CalendarCardConfig['initial_view'],
     });
   }
 
@@ -76,6 +77,15 @@ class FamilyCalendarForHomeassistantEditor extends LitElement {
   private _readChecked(event: Event): boolean {
     const target = event.target as { checked?: boolean } | null;
     return target?.checked ?? false;
+  }
+
+  private _readSelectValue(event: Event): string {
+    const customEvent = event as CustomEvent<{ value?: string }>;
+    const detailValue = customEvent.detail?.value;
+    if (typeof detailValue === 'string') {
+      return detailValue;
+    }
+    return this._readValue(event);
   }
 
   private _addCalendar(entityId: string) {
@@ -155,16 +165,16 @@ class FamilyCalendarForHomeassistantEditor extends LitElement {
           @input=${this._setTitle}
         ></ha-textfield>
 
-        <ha-select
+        <ha-control-select
           .label=${'Default view'}
           .value=${this._config.initial_view ?? 'dayGridMonth'}
-          @selected=${this._setView}
-          @change=${this._setView}
-        >
-          <mwc-list-item value="dayGridMonth">Month</mwc-list-item>
-          <mwc-list-item value="timeGridWeek">Week</mwc-list-item>
-          <mwc-list-item value="timeGridDay">Day</mwc-list-item>
-        </ha-select>
+          .options=${[
+            { value: 'dayGridMonth', label: 'Month' },
+            { value: 'timeGridWeek', label: 'Week' },
+            { value: 'timeGridDay', label: 'Day' },
+          ]}
+          @value-changed=${this._setView}
+        ></ha-control-select>
 
         <ha-textfield
           .label=${'Initial time (week/day)'}

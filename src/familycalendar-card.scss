@@ -14,19 +14,13 @@ ha-card {
   padding: 8px 16px 12px;
 }
 
+.view-selector {
+  padding: 8px 16px 0;
+}
+
 .person-chip {
-  --ha-chip-background-color: var(--primary-color);
+  --ha-filter-chip-color: var(--primary-color);
   cursor: pointer;
-}
-
-.person-chip:not(.active) {
-  --ha-chip-background-color: transparent;
-  --ha-chip-text-color: var(--primary-text-color);
-  border: 1px solid var(--divider-color);
-}
-
-.person-chip.active {
-  --ha-chip-text-color: #fff;
 }
 
 .calendar-wrapper {

@@ -66,6 +66,7 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
   @state() private _saving = false;
   @state() private _deleting = false;
   @state() private _errorMessage = '';
+  @state() private _currentView: CalendarCardConfig['initial_view'] = 'dayGridMonth';
 
   private _calendar?: Calendar;
   private _calendarContainer?: HTMLDivElement;
@@ -198,6 +199,7 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
     const allIds = getAllCalendarIds(config);
     this._visibleCalendars = new Set(allIds);
     this._newEventCalendar = allIds[0] ?? '';
+    this._currentView = config.initial_view ?? 'dayGridMonth';
   }
 
   static getConfigElement() {
@@ -293,11 +295,11 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
       plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
       locales: allLocales,
       locale,
-      initialView: this._config.initial_view ?? 'dayGridMonth',
+      initialView: this._currentView,
       headerToolbar: {
         left: 'prev,next today',
         center: 'title',
-        right: 'dayGridMonth,timeGridWeek,timeGridDay',
+        right: '',
       },
       height: this._config.height ?? 'auto',
       editable: false,
@@ -588,6 +590,22 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
     return target?.checked ?? false;
   }
 
+  private _readSelectValue(event: Event): string {
+    const customEvent = event as CustomEvent<{ value?: string }>;
+    const detailValue = customEvent.detail?.value;
+    if (typeof detailValue === 'string') {
+      return detailValue;
+    }
+    return this._readValue(event);
+  }
+
+  private _setCalendarView(event: Event) {
+    const value = this._readSelectValue(event) as CalendarCardConfig['initial_view'];
+    if (!value || value === this._currentView) return;
+    this._currentView = value;
+    this._calendar?.changeView(value);
+  }
+
   private _closeDialog() {
     this._newEventData = undefined;
     this._dialogMode = 'create';
@@ -765,6 +783,18 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
 
     return html`
       <ha-card .header=${title}>
+        <div class="view-selector">
+          <ha-control-select
+            .label=${'View'}
+            .value=${this._currentView}
+            .options=${[
+              { value: 'dayGridMonth', label: 'Month' },
+              { value: 'timeGridWeek', label: 'Week' },
+              { value: 'timeGridDay', label: 'Day' },
+            ]}
+            @value-changed=${this._setCalendarView}
+          ></ha-control-select>
+        </div>
 
         ${groups.length > 1
           ? html`
@@ -773,15 +803,17 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
                   const personColor = group.color || 'var(--primary-color, #03a9f4)';
                   const isVisible = this._isGroupVisible(group);
                   return html`
-                    <ha-chip
-                      class="person-chip ${isVisible ? 'active' : ''}"
+                    <ha-filter-chip
+                      class="person-chip"
                       .label=${group.label}
-                      ?hasIcon=${!!group.icon}
-                      style="--ha-chip-background-color: ${personColor};"
+                      ?selected=${isVisible}
+                      style="--ha-filter-chip-color: ${personColor};"
                       @click=${() => this._setGroupVisible(group, !isVisible)}
                     >
-                      ${group.icon ? html`<ha-icon slot="icon" icon="${group.icon}"></ha-icon>` : nothing}
-                    </ha-chip>
+                      ${group.icon
+                        ? html`<ha-icon slot="leading-icon" icon="${group.icon}"></ha-icon>`
+                        : nothing}
+                    </ha-filter-chip>
                   `;
                 })}
               </div>
@@ -801,7 +833,8 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
     const allIds = getAllCalendarIds(this._config!);
     const inputType = this._newEventAllDay ? 'date' : 'datetime-local';
     const locale = this._getLocale();
-    const heading = this._dialogMode === 'edit' ? this._getText('editEvent') : this._getText('newEvent');
+    const heading =
+      this._dialogMode === 'edit' ? this._getText('editEvent') : this._getText('newEvent');
 
     return html`
       <ha-dialog class="dialog" open .heading=${heading} @closed=${this._closeDialog}>

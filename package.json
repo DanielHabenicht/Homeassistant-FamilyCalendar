@@ -27,6 +27,7 @@
     "@fullcalendar/interaction": "^6.1.15",
     "@fullcalendar/timegrid": "^6.1.15",
     "@fullcalendar/web-component": "^6.1.20",
+    "@kipk/load-ha-components": "^1.0.3",
     "lit": "^3.2.1"
   },
   "devDependencies": {
