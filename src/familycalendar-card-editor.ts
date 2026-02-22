@@ -45,6 +45,29 @@ class FamilyCalendarForHomeassistantEditor extends LitElement {
     });
   }
 
+  private _setInitialTime(e: Event) {
+    const value = (e.target as HTMLInputElement).value;
+    this._dispatchConfig({
+      ...this._config!,
+      initial_time: value ? `${value}:00` : undefined,
+    });
+  }
+
+  private _setShowNowIndicator(e: Event) {
+    this._dispatchConfig({
+      ...this._config!,
+      show_now_indicator: (e.target as HTMLInputElement).checked,
+    });
+  }
+
+  private _setHeight(e: Event) {
+    const value = (e.target as HTMLInputElement).value?.trim();
+    this._dispatchConfig({
+      ...this._config!,
+      height: value || 'auto',
+    });
+  }
+
   private _addCalendar(entityId: string) {
     const current = this._config?.calendars ?? [];
     if (!current.includes(entityId)) {
@@ -128,6 +151,38 @@ class FamilyCalendarForHomeassistantEditor extends LitElement {
             <option value="timeGridWeek">Week</option>
             <option value="timeGridDay">Day</option>
           </select>
+        </label>
+
+        <label class="field">
+          Initial time (week/day)
+          <input
+            type="time"
+            step="60"
+            .value=${(this._config.initial_time ?? '00:00:00').slice(0, 5)}
+            @input=${this._setInitialTime}
+          />
+        </label>
+
+        <label class="field checkbox-field">
+          <span>Show current time indicator (week/day)</span>
+          <input
+            type="checkbox"
+            .checked=${this._config.show_now_indicator ?? true}
+            @change=${this._setShowNowIndicator}
+          />
+        </label>
+
+        <label class="field">
+          Calendar height
+          <input
+            type="text"
+            placeholder="auto"
+            .value=${this._config.height ?? 'auto'}
+            @input=${this._setHeight}
+          />
+          <span style="font-size: 0.75rem; color: var(--secondary-text-color, #999);">
+            e.g. 600px, 80vh, auto
+          </span>
         </label>
 
         <h3>Calendars</h3>
@@ -258,6 +313,13 @@ class FamilyCalendarForHomeassistantEditor extends LitElement {
       gap: 4px;
       font-size: 0.85rem;
       color: var(--secondary-text-color, #666);
+    }
+
+    .checkbox-field {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
     }
 
     .field input,

@@ -76,6 +76,24 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
     return getPreferredLocale(this.hass);
   }
 
+  private _getInitialScrollTime(): string {
+    const value = this._config?.initial_time?.trim();
+    if (!value) return '00:00:00';
+
+    const match = value.match(/^(\d{2}):(\d{2})(?::(\d{2}))?$/);
+    if (!match) return '00:00:00';
+
+    const hours = Number.parseInt(match[1], 10);
+    const minutes = Number.parseInt(match[2], 10);
+    const seconds = Number.parseInt(match[3] ?? '00', 10);
+
+    if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59 || seconds < 0 || seconds > 59) {
+      return '00:00:00';
+    }
+
+    return `${match[1]}:${match[2]}:${(match[3] ?? '00').padStart(2, '0')}`;
+  }
+
   private _getText(
     key:
       | 'newEvent'
@@ -186,6 +204,9 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
       calendars: [],
       persons: [],
       initial_view: 'dayGridMonth',
+      initial_time: '06:00:00',
+      show_now_indicator: true,
+      height: 'auto',
     };
   }
 
@@ -272,11 +293,13 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
         center: 'title',
         right: 'dayGridMonth,timeGridWeek,timeGridDay',
       },
-      height: 'auto',
+      height: this._config.height ?? 'auto',
       editable: false,
       selectable: true,
       selectMirror: true,
       dayMaxEvents: true,
+      nowIndicator: this._config.show_now_indicator ?? true,
+      scrollTime: this._getInitialScrollTime(),
       // Click on a time slot or day cell opens the new-event dialog
       select(info) {
         self._openNewEventDialog({

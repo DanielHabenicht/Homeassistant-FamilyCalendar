@@ -53,6 +53,9 @@ Reload the HA browser tab (Ctrl+Shift+R) after changes.
 type: custom:familycalendar-card
 title: Family Calendar # optional – card header title
 initial_view: dayGridMonth # dayGridMonth | timeGridWeek | timeGridDay
+initial_time: '06:00:00' # optional – initial scroll time for week/day view
+show_now_indicator: true # optional – show current-time line in week/day view
+height: 'auto' # optional – calendar height (e.g. 600px, 80vh, auto)
 
 # Simple list of calendar entity IDs (no grouping)
 calendars:

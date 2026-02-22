@@ -67,6 +67,12 @@ export interface CalendarCardConfig {
   persons?: PersonGroup[];
   /** Initial view: dayGridMonth | timeGridWeek | timeGridDay */
   initial_view?: 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay';
+  /** Initial scroll time for time-grid views. Format HH:mm or HH:mm:ss */
+  initial_time?: string;
+  /** Show current time indicator in time-grid views */
+  show_now_indicator?: boolean;
+  /** Calendar height in CSS units (e.g. '600px', 'auto', '80vh') */
+  height?: string;
   /** Card title */
   title?: string;
 }
