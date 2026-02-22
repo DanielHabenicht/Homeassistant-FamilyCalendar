@@ -13,6 +13,7 @@ Built with [FullCalendar.js](https://fullcalendar.io/) and [Lit](https://lit.dev
 | **Views**            | Month (`dayGridMonth`), Week (`timeGridWeek`), Day (`timeGridDay`)    |
 | **Person selectors** | Chips above the calendar to show/hide calendars grouped by person     |
 | **Click to create**  | Click any time slot or day cell to open a pre-filled new-event dialog |
+| **Edit / Delete**    | Click an existing event to edit details or delete it                  |
 | **Calendar picker**  | Choose which HA calendar the new event is created in                  |
 | **Card editor**      | Full Lovelace UI editor – no YAML required                            |
 

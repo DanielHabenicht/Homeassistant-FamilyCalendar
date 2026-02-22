@@ -23,7 +23,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 
-import type { EventInput } from '@fullcalendar/core';
+import type { EventApi, EventClickArg, EventInput, EventMountArg } from '@fullcalendar/core';
 import type { HomeAssistant, CalendarCardConfig, NewEventData } from './types.js';
 import {
   getAllCalendarIds,
@@ -59,10 +59,15 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
   @state() private _newEventEnd = '';
   @state() private _newEventCalendar = '';
   @state() private _newEventAllDay = false;
+  @state() private _dialogMode: 'create' | 'edit' = 'create';
+  @state() private _editingEventEntityId = '';
+  @state() private _editingEventUid = '';
   @state() private _saving = false;
+  @state() private _deleting = false;
   @state() private _errorMessage = '';
 
   private _calendar?: Calendar;
+  private _showClickTestAlert = true;
 
   // FullCalendar instance is created once and reused
   private _fcInitialized = false;
@@ -74,6 +79,7 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
   private _getText(
     key:
       | 'newEvent'
+      | 'editEvent'
       | 'title'
       | 'placeholder'
       | 'allDay'
@@ -82,15 +88,25 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
       | 'calendar'
       | 'cancel'
       | 'save'
+      | 'update'
+      | 'delete'
       | 'saving'
+      | 'updating'
+      | 'deleting'
       | 'titleError'
-      | 'calendarError',
+      | 'calendarError'
+      | 'uidError'
+      | 'deleteConfirm'
+      | 'createError'
+      | 'updateError'
+      | 'deleteError',
   ): string {
     const locale = this._getLocale().toLowerCase();
     const isGerman = locale.startsWith('de');
 
     const de: Record<typeof key, string> = {
       newEvent: 'Neuer Termin',
+      editEvent: 'Termin bearbeiten',
       title: 'Titel',
       placeholder: 'Termintitel',
       allDay: 'Ganztägig',
@@ -99,13 +115,23 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
       calendar: 'Kalender',
       cancel: 'Abbrechen',
       save: 'Speichern',
+      update: 'Aktualisieren',
+      delete: 'Löschen',
       saving: 'Speichere…',
+      updating: 'Aktualisiere…',
+      deleting: 'Lösche…',
       titleError: 'Bitte einen Titel eingeben.',
       calendarError: 'Bitte einen Kalender auswählen.',
+      uidError: 'Dieser Termin kann nicht bearbeitet oder gelöscht werden.',
+      deleteConfirm: 'Diesen Termin wirklich löschen?',
+      createError: 'Termin konnte nicht erstellt werden',
+      updateError: 'Termin konnte nicht aktualisiert werden',
+      deleteError: 'Termin konnte nicht gelöscht werden',
     };
 
     const en: Record<typeof key, string> = {
       newEvent: 'New Event',
+      editEvent: 'Edit Event',
       title: 'Title',
       placeholder: 'Event title',
       allDay: 'All day',
@@ -114,9 +140,18 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
       calendar: 'Calendar',
       cancel: 'Cancel',
       save: 'Save',
+      update: 'Update',
+      delete: 'Delete',
       saving: 'Saving…',
+      updating: 'Updating…',
+      deleting: 'Deleting…',
       titleError: 'Please enter a title.',
       calendarError: 'Please select a calendar.',
+      uidError: 'This event cannot be edited or deleted.',
+      deleteConfirm: 'Delete this event?',
+      createError: 'Failed to create event',
+      updateError: 'Failed to update event',
+      deleteError: 'Failed to delete event',
     };
 
     return (isGerman ? de : en)[key];
@@ -250,12 +285,45 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
         end.setHours(start.getHours() + 1);
         self._openNewEventDialog({ start, end, allDay: info.allDay });
       },
+      eventClick(info: EventClickArg) {
+        info.jsEvent.preventDefault();
+        info.jsEvent.stopPropagation();
+        self._openEditEventDialog(info.event);
+      },
+      eventDidMount(info: EventMountArg) {
+        info.el.style.cursor = 'pointer';
+        info.el.setAttribute('data-familycalendar-event-id', info.event.id);
+        info.el.addEventListener('click', (ev) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          self._openEditEventDialog(info.event);
+        });
+      },
       eventSources: self._buildEventSources(),
     });
 
     this._calendar.render();
+    container.addEventListener('click', this._onCalendarContainerClick, true);
     this._fcInitialized = true;
   }
+
+  private _onCalendarContainerClick = (event: Event) => {
+    const target = event.target;
+    if (!(target instanceof Element) || !this._calendar) return;
+
+    const eventEl = target.closest<HTMLElement>('[data-familycalendar-event-id], .fc-event');
+    if (!eventEl) return;
+
+    const eventId = eventEl.getAttribute('data-familycalendar-event-id');
+    if (!eventId) return;
+
+    const calendarEvent = this._calendar.getEventById(eventId);
+    if (!calendarEvent) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    this._openEditEventDialog(calendarEvent);
+  };
 
   private _buildEventSources() {
     if (!this._config || !this.hass) return [];
@@ -277,13 +345,18 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
             try {
               const evs = await fetchCalendarEvents(hass, entityId, fetchInfo.start, fetchInfo.end);
               successCallback(
-                evs.map((ev) => ({
-                  title: ev.summary,
-                  start: ev.start,
-                  end: ev.end,
-                  allDay: ev.allDay,
-                  extendedProps: { description: ev.description, entityId },
-                })),
+                evs.map((ev) => {
+                  const eventId =
+                    ev.uid ?? `${entityId}__${ev.start}__${ev.end}__${ev.summary ?? 'event'}`;
+                  return {
+                    id: eventId,
+                    title: ev.summary,
+                    start: ev.start,
+                    end: ev.end,
+                    allDay: ev.allDay,
+                    extendedProps: { description: ev.description, entityId, uid: ev.uid },
+                  };
+                }),
               );
             } catch (e) {
               failureCallback(e as Error);
@@ -315,13 +388,18 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
             try {
               const evs = await fetchCalendarEvents(hass, entityId, fetchInfo.start, fetchInfo.end);
               successCallback(
-                evs.map((ev) => ({
-                  title: ev.summary,
-                  start: ev.start,
-                  end: ev.end,
-                  allDay: ev.allDay,
-                  extendedProps: { description: ev.description, entityId },
-                })),
+                evs.map((ev) => {
+                  const eventId =
+                    ev.uid ?? `${entityId}__${ev.start}__${ev.end}__${ev.summary ?? 'event'}`;
+                  return {
+                    id: eventId,
+                    title: ev.summary,
+                    start: ev.start,
+                    end: ev.end,
+                    allDay: ev.allDay,
+                    extendedProps: { description: ev.description, entityId, uid: ev.uid },
+                  };
+                }),
               );
             } catch (e) {
               failureCallback(e as Error);
@@ -336,6 +414,9 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
   // -------------------------------------------------------------------------
 
   private _openNewEventDialog(data: NewEventData) {
+    this._dialogMode = 'create';
+    this._editingEventEntityId = '';
+    this._editingEventUid = '';
     this._newEventData = data;
     this._newEventTitle = '';
     this._newEventAllDay = data.allDay;
@@ -355,9 +436,91 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
     this._errorMessage = '';
   }
 
+  private _openEditEventDialog(event: EventApi) {
+    if (this._showClickTestAlert) {
+      window.alert(`Event click detected: ${event.title || 'Untitled event'}`);
+    }
+
+    const start = event.start ?? (event.startStr ? new Date(event.startStr) : null);
+    if (!start) return;
+
+    const end = event.end ?? new Date(start.getTime() + 60 * 60 * 1000);
+    const extendedProps = event.extendedProps as Record<string, unknown>;
+    const entityId = typeof extendedProps.entityId === 'string' ? extendedProps.entityId : '';
+    const uid = typeof extendedProps.uid === 'string' ? extendedProps.uid : '';
+
+    this._dialogMode = 'edit';
+    this._newEventData = { start, end, allDay: event.allDay };
+    this._newEventTitle = event.title;
+    this._newEventAllDay = event.allDay;
+    this._editingEventEntityId = entityId;
+    this._editingEventUid = uid;
+
+    if (event.allDay) {
+      this._newEventStart = formatDateLocal(start);
+      const endDate = new Date(end);
+      endDate.setDate(endDate.getDate() - 1); // FC end is exclusive
+      this._newEventEnd = formatDateLocal(endDate);
+    } else {
+      this._newEventStart = formatDateTimeLocal(start);
+      this._newEventEnd = formatDateTimeLocal(end);
+    }
+
+    this._newEventCalendar = entityId;
+    this._errorMessage = '';
+  }
+
+  private _handleAllDayToggle(checked: boolean) {
+    const previousAllDay = this._newEventAllDay;
+    if (previousAllDay === checked) return;
+
+    const parseInput = (value: string, allDay: boolean): Date | undefined => {
+      if (!value) return undefined;
+      const date = allDay ? new Date(`${value}T00:00:00`) : new Date(value);
+      return Number.isNaN(date.getTime()) ? undefined : date;
+    };
+
+    const fallbackStart = this._newEventData?.start;
+    const fallbackEnd = this._newEventData?.end;
+    const parsedStart = parseInput(this._newEventStart, previousAllDay) ?? fallbackStart;
+    const parsedEnd = parseInput(this._newEventEnd, previousAllDay) ?? fallbackEnd;
+
+    if (!parsedStart || !parsedEnd) return;
+
+    this._newEventAllDay = checked;
+    if (checked) {
+      this._newEventStart = formatDateLocal(parsedStart);
+      this._newEventEnd = formatDateLocal(parsedEnd);
+    } else {
+      this._newEventStart = formatDateTimeLocal(parsedStart);
+      this._newEventEnd = formatDateTimeLocal(parsedEnd);
+    }
+  }
+
   private _closeDialog() {
     this._newEventData = undefined;
+    this._dialogMode = 'create';
+    this._editingEventEntityId = '';
+    this._editingEventUid = '';
     this._calendar?.unselect();
+  }
+
+  private async _callCalendarServiceWithFallback(
+    services: string[],
+    serviceData: Record<string, unknown>,
+  ): Promise<void> {
+    let lastError: unknown;
+    for (const service of services) {
+      try {
+        await this.hass.callService('calendar', service, serviceData);
+        return;
+      } catch (e) {
+        lastError = e;
+      }
+    }
+
+    if (lastError instanceof Error) throw lastError;
+    throw new Error('Calendar service call failed.');
   }
 
   private async _saveEvent() {
@@ -376,7 +539,28 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
       const startVal = this._newEventStart;
       const endVal = this._newEventEnd;
 
-      if (this._newEventAllDay) {
+      if (this._dialogMode === 'edit') {
+        if (!this._editingEventUid) {
+          this._errorMessage = this._getText('uidError');
+          return;
+        }
+
+        const serviceData: Record<string, unknown> = {
+          entity_id: this._editingEventEntityId,
+          uid: this._editingEventUid,
+          summary: this._newEventTitle.trim(),
+        };
+
+        if (this._newEventAllDay) {
+          serviceData.start_date = startVal;
+          serviceData.end_date = endVal;
+        } else {
+          serviceData.start_date_time = startVal;
+          serviceData.end_date_time = endVal;
+        }
+
+        await this._callCalendarServiceWithFallback(['edit_event', 'update_event'], serviceData);
+      } else if (this._newEventAllDay) {
         await this.hass.callService('calendar', 'create_event', {
           entity_id: this._newEventCalendar,
           summary: this._newEventTitle.trim(),
@@ -396,9 +580,36 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
       // Refresh all event sources
       this._calendar?.getEventSources().forEach((src) => src.refetch());
     } catch (e) {
-      this._errorMessage = `Failed to create event: ${(e as Error).message}`;
+      const prefix =
+        this._dialogMode === 'edit' ? this._getText('updateError') : this._getText('createError');
+      this._errorMessage = `${prefix}: ${(e as Error).message}`;
     } finally {
       this._saving = false;
+    }
+  }
+
+  private async _deleteEvent() {
+    if (this._dialogMode !== 'edit') return;
+    if (!this._editingEventUid) {
+      this._errorMessage = this._getText('uidError');
+      return;
+    }
+    if (!window.confirm(this._getText('deleteConfirm'))) return;
+
+    this._deleting = true;
+    this._errorMessage = '';
+    try {
+      await this._callCalendarServiceWithFallback(['delete_event', 'remove_event'], {
+        entity_id: this._editingEventEntityId,
+        uid: this._editingEventUid,
+      });
+
+      this._closeDialog();
+      this._calendar?.getEventSources().forEach((src) => src.refetch());
+    } catch (e) {
+      this._errorMessage = `${this._getText('deleteError')}: ${(e as Error).message}`;
+    } finally {
+      this._deleting = false;
     }
   }
 
@@ -477,7 +688,9 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
     return html`
       <div class="dialog-overlay" @click=${this._closeDialog}>
         <div class="dialog" @click=${(e: Event) => e.stopPropagation()}>
-          <h3 class="dialog-title">${this._getText('newEvent')}</h3>
+          <h3 class="dialog-title">
+            ${this._dialogMode === 'edit' ? this._getText('editEvent') : this._getText('newEvent')}
+          </h3>
 
           <label class="dialog-label">
             ${this._getText('title')}
@@ -495,11 +708,8 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
             <input
               type="checkbox"
               .checked=${this._newEventAllDay}
-              @change=${(e: Event) => {
-                this._newEventAllDay = (e.target as HTMLInputElement).checked;
-                // Re-format dates when toggling all-day
-                if (this._newEventData) this._openNewEventDialog(this._newEventData);
-              }}
+              @change=${(e: Event) =>
+                this._handleAllDayToggle((e.target as HTMLInputElement).checked)}
             />
             ${this._getText('allDay')}
           </label>
@@ -550,12 +760,29 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
             <button class="dialog-btn dialog-btn--cancel" @click=${this._closeDialog}>
               ${this._getText('cancel')}
             </button>
+            ${this._dialogMode === 'edit'
+              ? html`
+                  <button
+                    class="dialog-btn dialog-btn--delete"
+                    ?disabled=${this._deleting || this._saving}
+                    @click=${this._deleteEvent}
+                  >
+                    ${this._deleting ? this._getText('deleting') : this._getText('delete')}
+                  </button>
+                `
+              : nothing}
             <button
               class="dialog-btn dialog-btn--save"
-              ?disabled=${this._saving}
+              ?disabled=${this._saving || this._deleting}
               @click=${this._saveEvent}
             >
-              ${this._saving ? this._getText('saving') : this._getText('save')}
+              ${this._saving
+                ? this._dialogMode === 'edit'
+                  ? this._getText('updating')
+                  : this._getText('saving')
+                : this._dialogMode === 'edit'
+                  ? this._getText('update')
+                  : this._getText('save')}
             </button>
           </div>
         </div>

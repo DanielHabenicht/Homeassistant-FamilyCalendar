@@ -72,6 +72,7 @@ export async function fetchCalendarEvents(
   Array<{
     summary: string;
     description?: string;
+    uid?: string;
     start: string;
     end: string;
     allDay: boolean;
@@ -85,6 +86,7 @@ export async function fetchCalendarEvents(
     Array<{
       summary: string;
       description?: string;
+      uid?: string;
       start: { dateTime?: string; date?: string };
       end: { dateTime?: string; date?: string };
     }>
@@ -95,6 +97,7 @@ export async function fetchCalendarEvents(
     return {
       summary: ev.summary,
       description: ev.description,
+      uid: ev.uid,
       start: ev.start.dateTime ?? ev.start.date ?? '',
       end: ev.end.dateTime ?? ev.end.date ?? '',
       allDay,

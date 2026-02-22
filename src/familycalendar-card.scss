@@ -244,3 +244,17 @@ ha-card {
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+.dialog-btn--delete {
+  background: var(--error-color, #f44336);
+  color: #fff;
+}
+
+.dialog-btn--delete:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.dialog-btn--delete:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
