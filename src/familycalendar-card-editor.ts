@@ -5,9 +5,10 @@
  * card editor dialog (gear icon on the card).
  */
 
-import { LitElement, html, css, type TemplateResult } from 'lit';
+import { LitElement, html, unsafeCSS, type TemplateResult } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import type { CalendarCardConfig, PersonGroup } from './types.js';
+import styles from './familycalendar-card-editor.scss';
 
 class FamilyCalendarForHomeassistantEditor extends LitElement {
   @property({ attribute: false }) public hass?: {
@@ -297,83 +298,7 @@ class FamilyCalendarForHomeassistantEditor extends LitElement {
     `;
   }
 
-  static styles = css`
-    .editor {
-      padding: 8px 0;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    h3 {
-      margin: 8px 0 4px;
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: var(--primary-text-color);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .hint {
-      font-size: 0.8rem;
-      color: var(--secondary-text-color, #666);
-      margin: 0 0 4px;
-    }
-
-    .list-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 4px 8px;
-      background: var(--secondary-background-color, #f5f5f5);
-      border-radius: 4px;
-      font-size: 0.85rem;
-    }
-
-    .list-item.indent {
-      margin-left: 16px;
-    }
-
-    .add-select {
-      width: 100%;
-    }
-
-    .add-select.indent {
-      margin-left: 16px;
-    }
-
-    .remove-btn {
-      color: var(--error-color, #f44336);
-      min-width: 0;
-    }
-
-    .small-btn {
-      color: var(--primary-color, #03a9f4);
-      margin-left: auto;
-    }
-
-    .person-block {
-      border: 1px solid var(--divider-color, #e0e0e0);
-      border-radius: 6px;
-      padding: 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .person-row {
-      display: flex;
-      align-items: flex-end;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .inline-field {
-      flex: 1;
-      min-width: 140px;
-    }
-  `;
+  static styles = unsafeCSS(styles);
 }
 
 customElements.define('familycalendar-card-editor', FamilyCalendarForHomeassistantEditor);
