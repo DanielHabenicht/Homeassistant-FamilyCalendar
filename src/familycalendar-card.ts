@@ -25,6 +25,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 
 import type { EventApi, EventClickArg, EventInput, EventMountArg } from '@fullcalendar/core';
 import type { HomeAssistant, CalendarCardConfig, NewEventData } from './types.js';
+import { getCardDictionary, type CardTextKey } from './i18n.js';
 import {
   getAllCalendarIds,
   getCalendarColor,
@@ -97,91 +98,8 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
     return `${match[1]}:${match[2]}:${(match[3] ?? '00').padStart(2, '0')}`;
   }
 
-  private _getText(
-    key:
-      | 'newEvent'
-      | 'editEvent'
-      | 'title'
-      | 'placeholder'
-      | 'description'
-      | 'descriptionPlaceholder'
-      | 'allDay'
-      | 'start'
-      | 'end'
-      | 'calendar'
-      | 'cancel'
-      | 'save'
-      | 'update'
-      | 'delete'
-      | 'saving'
-      | 'updating'
-      | 'deleting'
-      | 'titleError'
-      | 'calendarError'
-      | 'uidError'
-      | 'deleteConfirm'
-      | 'createError'
-      | 'updateError'
-      | 'deleteError',
-  ): string {
-    const locale = this._getLocale().toLowerCase();
-    const isGerman = locale.startsWith('de');
-
-    const de: Record<typeof key, string> = {
-      newEvent: 'Neuer Termin',
-      editEvent: 'Termin bearbeiten',
-      title: 'Titel',
-      placeholder: 'Termintitel',
-      description: 'Beschreibung',
-      descriptionPlaceholder: 'Beschreibung eingeben (optional)',
-      allDay: 'Ganztägig',
-      start: 'Start',
-      end: 'Ende',
-      calendar: 'Kalender',
-      cancel: 'Abbrechen',
-      save: 'Speichern',
-      update: 'Aktualisieren',
-      delete: 'Löschen',
-      saving: 'Speichere…',
-      updating: 'Aktualisiere…',
-      deleting: 'Lösche…',
-      titleError: 'Bitte einen Titel eingeben.',
-      calendarError: 'Bitte einen Kalender auswählen.',
-      uidError: 'Dieser Termin kann nicht bearbeitet oder gelöscht werden.',
-      deleteConfirm: 'Diesen Termin wirklich löschen?',
-      createError: 'Termin konnte nicht erstellt werden',
-      updateError: 'Termin konnte nicht aktualisiert werden',
-      deleteError: 'Termin konnte nicht gelöscht werden',
-    };
-
-    const en: Record<typeof key, string> = {
-      newEvent: 'New Event',
-      editEvent: 'Edit Event',
-      title: 'Title',
-      placeholder: 'Event title',
-      description: 'Description',
-      descriptionPlaceholder: 'Enter description (optional)',
-      allDay: 'All day',
-      start: 'Start',
-      end: 'End',
-      calendar: 'Calendar',
-      cancel: 'Cancel',
-      save: 'Save',
-      update: 'Update',
-      delete: 'Delete',
-      saving: 'Saving…',
-      updating: 'Updating…',
-      deleting: 'Deleting…',
-      titleError: 'Please enter a title.',
-      calendarError: 'Please select a calendar.',
-      uidError: 'This event cannot be edited or deleted.',
-      deleteConfirm: 'Delete this event?',
-      createError: 'Failed to create event',
-      updateError: 'Failed to update event',
-      deleteError: 'Failed to delete event',
-    };
-
-    return (isGerman ? de : en)[key];
+  private _getText(key: CardTextKey): string {
+    return getCardDictionary(this._getLocale())[key];
   }
 
   static get properties() {
@@ -772,21 +690,21 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
   }
 
   protected render(): TemplateResult {
-    if (!this._config) return html`<div>No configuration</div>`;
+    if (!this._config) return html`<div>${this._getText('noConfiguration')}</div>`;
 
     const groups = this._personGroups;
-    const title = this._config.title ?? 'Calendar';
+    const title = this._config.title ?? this._getText('calendarFallbackTitle');
 
     return html`
       <ha-card .header=${title}>
         <div class="view-selector">
           <ha-control-select
-            .label=${'View'}
+            .label=${this._getText('view')}
             .value=${this._currentView}
             .options=${[
-              { value: 'dayGridMonth', label: 'Month' },
-              { value: 'timeGridWeek', label: 'Week' },
-              { value: 'timeGridDay', label: 'Day' },
+              { value: 'dayGridMonth', label: this._getText('month') },
+              { value: 'timeGridWeek', label: this._getText('week') },
+              { value: 'timeGridDay', label: this._getText('day') },
             ]}
             @value-changed=${this._setCalendarView}
           ></ha-control-select>
@@ -832,18 +750,8 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
     const allIds = getAllCalendarIds(this._config!);
     const inputType = this._newEventAllDay ? 'date' : 'datetime-local';
     const locale = this._getLocale();
-    const heading =
-      this._dialogMode === 'edit' ? this._getText('editEvent') : this._getText('newEvent');
-    const formTexts = {
-      title: this._getText('title'),
-      placeholder: this._getText('placeholder'),
-      description: this._getText('description'),
-      descriptionPlaceholder: this._getText('descriptionPlaceholder'),
-      allDay: this._getText('allDay'),
-      start: this._getText('start'),
-      end: this._getText('end'),
-      calendar: this._getText('calendar'),
-    };
+    const dictionary = getCardDictionary(locale);
+    const heading = this._dialogMode === 'edit' ? dictionary.editEvent : dictionary.newEvent;
 
     return html`
       <ha-dialog class="dialog" open .heading=${heading} @closed=${this._closeDialog}>
@@ -858,7 +766,7 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
           .locale=${locale}
           .inputType=${inputType}
           .errorMessage=${this._errorMessage}
-          .texts=${formTexts}
+          .dictionary=${dictionary}
           @familycalendar-title-changed=${(e: CustomEvent<{ value: string }>) =>
             (this._newEventTitle = e.detail.value)}
           @familycalendar-description-changed=${(e: CustomEvent<{ value: string }>) =>

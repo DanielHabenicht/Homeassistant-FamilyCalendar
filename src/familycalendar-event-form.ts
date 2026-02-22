@@ -1,17 +1,7 @@
 import { LitElement, html, unsafeCSS, type TemplateResult, nothing } from 'lit';
 import { property } from 'lit/decorators.js';
+import type { CardTextKey } from './i18n.js';
 import styles from './familycalendar-event-form.scss';
-
-type EventFormTexts = {
-  title: string;
-  placeholder: string;
-  description: string;
-  descriptionPlaceholder: string;
-  allDay: string;
-  start: string;
-  end: string;
-  calendar: string;
-};
 
 type EventFormCalendarOption = {
   value: string;
@@ -29,7 +19,7 @@ class FamilyCalendarEventForm extends LitElement {
   @property({ type: String }) public locale = 'en';
   @property({ type: String }) public inputType: 'date' | 'datetime-local' = 'datetime-local';
   @property({ type: String }) public errorMessage = '';
-  @property({ attribute: false }) public texts!: EventFormTexts;
+  @property({ attribute: false }) public dictionary!: Record<CardTextKey, string>;
 
   private _readValue(event: Event): string {
     const target = event.target as { value?: string } | null;
@@ -56,8 +46,8 @@ class FamilyCalendarEventForm extends LitElement {
       <div class="dialog-fields">
         <ha-textfield
           class="dialog-input"
-          .label=${this.texts.title}
-          .placeholder=${this.texts.placeholder}
+          .label=${this.dictionary.title}
+          .placeholder=${this.dictionary.placeholder}
           .value=${this.title}
           @input=${(e: Event) => this._emit('familycalendar-title-changed', this._readValue(e))}
           @keydown=${(e: KeyboardEvent) => e.key === 'Enter' && this._emit('familycalendar-submit')}
@@ -65,23 +55,24 @@ class FamilyCalendarEventForm extends LitElement {
 
         <ha-textarea
           class="dialog-input"
-          .label=${this.texts.description}
-          .placeholder=${this.texts.descriptionPlaceholder}
+          .label=${this.dictionary.description}
+          .placeholder=${this.dictionary.descriptionPlaceholder}
           .value=${this.description}
           @input=${(e: Event) =>
             this._emit('familycalendar-description-changed', this._readValue(e))}
         ></ha-textarea>
 
-        <ha-formfield .label=${this.texts.allDay}>
+        <ha-formfield .label=${this.dictionary.allDay}>
           <ha-checkbox
             .checked=${this.allDay}
-            @change=${(e: Event) => this._emit('familycalendar-all-day-changed', this._readChecked(e))}
+            @change=${(e: Event) =>
+              this._emit('familycalendar-all-day-changed', this._readChecked(e))}
           ></ha-checkbox>
         </ha-formfield>
 
         <ha-textfield
           class="dialog-input"
-          .label=${this.texts.start}
+          .label=${this.dictionary.start}
           type=${this.inputType}
           lang=${this.locale}
           .value=${this.start}
@@ -90,7 +81,7 @@ class FamilyCalendarEventForm extends LitElement {
 
         <ha-textfield
           class="dialog-input"
-          .label=${this.texts.end}
+          .label=${this.dictionary.end}
           type=${this.inputType}
           lang=${this.locale}
           .value=${this.end}
@@ -99,9 +90,10 @@ class FamilyCalendarEventForm extends LitElement {
 
         <ha-select
           class="dialog-input"
-          .label=${this.texts.calendar}
+          .label=${this.dictionary.calendar}
           .value=${this.calendar}
-          @selected=${(e: Event) => this._emit('familycalendar-calendar-changed', this._readValue(e))}
+          @selected=${(e: Event) =>
+            this._emit('familycalendar-calendar-changed', this._readValue(e))}
           @change=${(e: Event) => this._emit('familycalendar-calendar-changed', this._readValue(e))}
         >
           ${this.calendarOptions.map(
