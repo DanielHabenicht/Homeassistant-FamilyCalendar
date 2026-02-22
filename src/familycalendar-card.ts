@@ -260,14 +260,13 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
     return group.ids.some((id) => this._visibleCalendars.has(id));
   }
 
-  private _toggleGroup(group: { ids: string[] }) {
+  private _setGroupVisible(group: { ids: string[] }, shouldBeVisible: boolean) {
     const visible = new Set(this._visibleCalendars);
-    const currentlyVisible = this._isGroupVisible(group);
     for (const id of group.ids) {
-      if (currentlyVisible) {
-        visible.delete(id);
-      } else {
+      if (shouldBeVisible) {
         visible.add(id);
+      } else {
+        visible.delete(id);
       }
     }
     this._visibleCalendars = visible;
@@ -579,6 +578,16 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
     }
   }
 
+  private _readValue(event: Event): string {
+    const target = event.target as { value?: string } | null;
+    return target?.value ?? '';
+  }
+
+  private _readChecked(event: Event): boolean {
+    const target = event.target as { checked?: boolean } | null;
+    return target?.checked ?? false;
+  }
+
   private _closeDialog() {
     this._newEventData = undefined;
     this._dialogMode = 'create';
@@ -755,10 +764,7 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
     const title = this._config.title ?? 'Calendar';
 
     return html`
-      <ha-card>
-        <div class="card-header">
-          <span class="card-title">${title}</span>
-        </div>
+      <ha-card .header=${title}>
 
         ${groups.length > 1
           ? html`
@@ -767,23 +773,15 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
                   const personColor = group.color || 'var(--primary-color, #03a9f4)';
                   const isVisible = this._isGroupVisible(group);
                   return html`
-                    <button
+                    <ha-chip
                       class="person-chip ${isVisible ? 'active' : ''}"
-                      title="${group.label}"
-                      @click=${() => this._toggleGroup(group)}
-                      style="${isVisible
-                        ? `background: ${personColor}; border-color: ${personColor};`
-                        : `border-color: ${personColor};`}"
+                      .label=${group.label}
+                      ?hasIcon=${!!group.icon}
+                      style="--ha-chip-background-color: ${personColor};"
+                      @click=${() => this._setGroupVisible(group, !isVisible)}
                     >
-                      ${group.icon
-                        ? html`<ha-icon icon="${group.icon}"></ha-icon>`
-                        : html`<span
-                            class="person-avatar"
-                            style="${isVisible ? '' : `background: ${personColor}; color: #fff;`}"
-                            >${group.label.charAt(0).toUpperCase()}</span
-                          >`}
-                      <span class="person-name">${group.label}</span>
-                    </button>
+                      ${group.icon ? html`<ha-icon slot="icon" icon="${group.icon}"></ha-icon>` : nothing}
+                    </ha-chip>
                   `;
                 })}
               </div>
@@ -803,120 +801,101 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
     const allIds = getAllCalendarIds(this._config!);
     const inputType = this._newEventAllDay ? 'date' : 'datetime-local';
     const locale = this._getLocale();
+    const heading = this._dialogMode === 'edit' ? this._getText('editEvent') : this._getText('newEvent');
 
     return html`
-      <div class="dialog-overlay" @click=${this._closeDialog}>
-        <div class="dialog" @click=${(e: Event) => e.stopPropagation()}>
-          <h3 class="dialog-title">
-            ${this._dialogMode === 'edit' ? this._getText('editEvent') : this._getText('newEvent')}
-          </h3>
+      <ha-dialog class="dialog" open .heading=${heading} @closed=${this._closeDialog}>
+        <div class="dialog-fields">
+          <ha-textfield
+            class="dialog-input"
+            .label=${this._getText('title')}
+            .placeholder=${this._getText('placeholder')}
+            .value=${this._newEventTitle}
+            @input=${(e: Event) => (this._newEventTitle = this._readValue(e))}
+            @keydown=${(e: KeyboardEvent) => e.key === 'Enter' && this._saveEvent()}
+          ></ha-textfield>
 
-          <label class="dialog-label">
-            ${this._getText('title')}
-            <input
-              class="dialog-input"
-              type="text"
-              placeholder="${this._getText('placeholder')}"
-              .value=${this._newEventTitle}
-              @input=${(e: Event) => (this._newEventTitle = (e.target as HTMLInputElement).value)}
-              @keydown=${(e: KeyboardEvent) => e.key === 'Enter' && this._saveEvent()}
-            />
-          </label>
+          <ha-textarea
+            class="dialog-input"
+            .label=${this._getText('description')}
+            .placeholder=${this._getText('descriptionPlaceholder')}
+            .value=${this._newEventDescription}
+            @input=${(e: Event) => (this._newEventDescription = this._readValue(e))}
+          ></ha-textarea>
 
-          <label class="dialog-label">
-            ${this._getText('description')}
-            <textarea
-              class="dialog-input dialog-textarea"
-              placeholder="${this._getText('descriptionPlaceholder')}"
-              .value=${this._newEventDescription}
-              @input=${(e: Event) =>
-                (this._newEventDescription = (e.target as HTMLTextAreaElement).value)}
-            ></textarea>
-          </label>
-
-          <label class="dialog-label dialog-checkbox-label">
-            <input
-              type="checkbox"
+          <ha-formfield .label=${this._getText('allDay')}>
+            <ha-checkbox
               .checked=${this._newEventAllDay}
-              @change=${(e: Event) =>
-                this._handleAllDayToggle((e.target as HTMLInputElement).checked)}
-            />
-            ${this._getText('allDay')}
-          </label>
+              @change=${(e: Event) => this._handleAllDayToggle(this._readChecked(e))}
+            ></ha-checkbox>
+          </ha-formfield>
 
-          <label class="dialog-label">
-            ${this._getText('start')}
-            <input
-              class="dialog-input"
-              type="${inputType}"
-              lang="${locale}"
-              .value=${this._newEventStart}
-              @input=${(e: Event) => (this._newEventStart = (e.target as HTMLInputElement).value)}
-            />
-          </label>
+          <ha-textfield
+            class="dialog-input"
+            .label=${this._getText('start')}
+            type=${inputType}
+            lang=${locale}
+            .value=${this._newEventStart}
+            @input=${(e: Event) => (this._newEventStart = this._readValue(e))}
+          ></ha-textfield>
 
-          <label class="dialog-label">
-            ${this._getText('end')}
-            <input
-              class="dialog-input"
-              type="${inputType}"
-              lang="${locale}"
-              .value=${this._newEventEnd}
-              @input=${(e: Event) => (this._newEventEnd = (e.target as HTMLInputElement).value)}
-            />
-          </label>
+          <ha-textfield
+            class="dialog-input"
+            .label=${this._getText('end')}
+            type=${inputType}
+            lang=${locale}
+            .value=${this._newEventEnd}
+            @input=${(e: Event) => (this._newEventEnd = this._readValue(e))}
+          ></ha-textfield>
 
-          <label class="dialog-label">
-            ${this._getText('calendar')}
-            <select
-              class="dialog-input"
-              .value=${this._newEventCalendar}
-              @change=${(e: Event) =>
-                (this._newEventCalendar = (e.target as HTMLSelectElement).value)}
-            >
-              ${allIds.map(
-                (id) => html`
-                  <option value="${id}" ?selected=${id === this._newEventCalendar}>
-                    ${this._calendarLabel(id)}
-                  </option>
-                `,
-              )}
-            </select>
-          </label>
+          <ha-select
+            class="dialog-input"
+            .label=${this._getText('calendar')}
+            .value=${this._newEventCalendar}
+            @selected=${(e: Event) => (this._newEventCalendar = this._readValue(e))}
+            @change=${(e: Event) => (this._newEventCalendar = this._readValue(e))}
+          >
+            ${allIds.map(
+              (id) => html`
+                <mwc-list-item .value=${id} ?selected=${id === this._newEventCalendar}>
+                  ${this._calendarLabel(id)}
+                </mwc-list-item>
+              `,
+            )}
+          </ha-select>
 
           ${this._errorMessage ? html`<p class="dialog-error">${this._errorMessage}</p>` : nothing}
-
-          <div class="dialog-actions">
-            <button class="dialog-btn dialog-btn--cancel" @click=${this._closeDialog}>
-              ${this._getText('cancel')}
-            </button>
-            ${this._dialogMode === 'edit'
-              ? html`
-                  <button
-                    class="dialog-btn dialog-btn--delete"
-                    ?disabled=${this._deleting || this._saving}
-                    @click=${this._deleteEvent}
-                  >
-                    ${this._deleting ? this._getText('deleting') : this._getText('delete')}
-                  </button>
-                `
-              : nothing}
-            <button
-              class="dialog-btn dialog-btn--save"
-              ?disabled=${this._saving || this._deleting}
-              @click=${this._saveEvent}
-            >
-              ${this._saving
-                ? this._dialogMode === 'edit'
-                  ? this._getText('updating')
-                  : this._getText('saving')
-                : this._dialogMode === 'edit'
-                  ? this._getText('update')
-                  : this._getText('save')}
-            </button>
-          </div>
         </div>
-      </div>
+
+        <mwc-button slot="secondaryAction" @click=${this._closeDialog}>
+          ${this._getText('cancel')}
+        </mwc-button>
+        ${this._dialogMode === 'edit'
+          ? html`
+              <mwc-button
+                slot="primaryAction"
+                class="dialog-delete"
+                ?disabled=${this._deleting || this._saving}
+                @click=${this._deleteEvent}
+              >
+                ${this._deleting ? this._getText('deleting') : this._getText('delete')}
+              </mwc-button>
+            `
+          : nothing}
+        <mwc-button
+          slot="primaryAction"
+          ?disabled=${this._saving || this._deleting}
+          @click=${this._saveEvent}
+        >
+          ${this._saving
+            ? this._dialogMode === 'edit'
+              ? this._getText('updating')
+              : this._getText('saving')
+            : this._dialogMode === 'edit'
+              ? this._getText('update')
+              : this._getText('save')}
+        </mwc-button>
+      </ha-dialog>
     `;
   }
 

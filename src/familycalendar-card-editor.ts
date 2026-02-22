@@ -35,18 +35,18 @@ class FamilyCalendarForHomeassistantEditor extends LitElement {
   }
 
   private _setTitle(e: Event) {
-    this._dispatchConfig({ ...this._config!, title: (e.target as HTMLInputElement).value });
+    this._dispatchConfig({ ...this._config!, title: this._readValue(e) });
   }
 
   private _setView(e: Event) {
     this._dispatchConfig({
       ...this._config!,
-      initial_view: (e.target as HTMLSelectElement).value as CalendarCardConfig['initial_view'],
+      initial_view: this._readValue(e) as CalendarCardConfig['initial_view'],
     });
   }
 
   private _setInitialTime(e: Event) {
-    const value = (e.target as HTMLInputElement).value;
+    const value = this._readValue(e);
     this._dispatchConfig({
       ...this._config!,
       initial_time: value ? `${value}:00` : undefined,
@@ -56,16 +56,26 @@ class FamilyCalendarForHomeassistantEditor extends LitElement {
   private _setShowNowIndicator(e: Event) {
     this._dispatchConfig({
       ...this._config!,
-      show_now_indicator: (e.target as HTMLInputElement).checked,
+      show_now_indicator: this._readChecked(e),
     });
   }
 
   private _setHeight(e: Event) {
-    const value = (e.target as HTMLInputElement).value?.trim();
+    const value = this._readValue(e).trim();
     this._dispatchConfig({
       ...this._config!,
       height: value || 'auto',
     });
+  }
+
+  private _readValue(event: Event): string {
+    const target = event.target as { value?: string } | null;
+    return target?.value ?? '';
+  }
+
+  private _readChecked(event: Event): boolean {
+    const target = event.target as { checked?: boolean } | null;
+    return target?.checked ?? false;
   }
 
   private _addCalendar(entityId: string) {
@@ -139,51 +149,45 @@ class FamilyCalendarForHomeassistantEditor extends LitElement {
       <div class="editor">
         <h3>General</h3>
 
-        <label class="field">
-          Title
-          <input type="text" .value=${this._config.title ?? ''} @input=${this._setTitle} />
-        </label>
+        <ha-textfield
+          .label=${'Title'}
+          .value=${this._config.title ?? ''}
+          @input=${this._setTitle}
+        ></ha-textfield>
 
-        <label class="field">
-          Default view
-          <select .value=${this._config.initial_view ?? 'dayGridMonth'} @change=${this._setView}>
-            <option value="dayGridMonth">Month</option>
-            <option value="timeGridWeek">Week</option>
-            <option value="timeGridDay">Day</option>
-          </select>
-        </label>
+        <ha-select
+          .label=${'Default view'}
+          .value=${this._config.initial_view ?? 'dayGridMonth'}
+          @selected=${this._setView}
+          @change=${this._setView}
+        >
+          <mwc-list-item value="dayGridMonth">Month</mwc-list-item>
+          <mwc-list-item value="timeGridWeek">Week</mwc-list-item>
+          <mwc-list-item value="timeGridDay">Day</mwc-list-item>
+        </ha-select>
 
-        <label class="field">
-          Initial time (week/day)
-          <input
-            type="time"
-            step="60"
-            .value=${(this._config.initial_time ?? '00:00:00').slice(0, 5)}
-            @input=${this._setInitialTime}
-          />
-        </label>
+        <ha-textfield
+          .label=${'Initial time (week/day)'}
+          type="time"
+          step="60"
+          .value=${(this._config.initial_time ?? '00:00:00').slice(0, 5)}
+          @input=${this._setInitialTime}
+        ></ha-textfield>
 
-        <label class="field checkbox-field">
-          <span>Show current time indicator (week/day)</span>
-          <input
-            type="checkbox"
+        <ha-formfield .label=${'Show current time indicator (week/day)'}>
+          <ha-switch
             .checked=${this._config.show_now_indicator ?? true}
             @change=${this._setShowNowIndicator}
-          />
-        </label>
+          ></ha-switch>
+        </ha-formfield>
 
-        <label class="field">
-          Calendar height
-          <input
-            type="text"
-            placeholder="auto"
-            .value=${this._config.height ?? 'auto'}
-            @input=${this._setHeight}
-          />
-          <span style="font-size: 0.75rem; color: var(--secondary-text-color, #999);">
-            e.g. 600px, 80vh, auto
-          </span>
-        </label>
+        <ha-textfield
+          .label=${'Calendar height'}
+          .placeholder=${'auto'}
+          .value=${this._config.height ?? 'auto'}
+          @input=${this._setHeight}
+        ></ha-textfield>
+        <p class="hint">e.g. 600px, 80vh, auto</p>
 
         <h3>Calendars</h3>
         <p class="hint">Add calendar entities to display on the card.</p>
@@ -192,30 +196,31 @@ class FamilyCalendarForHomeassistantEditor extends LitElement {
           (cal) => html`
             <div class="list-item">
               <span>${cal}</span>
-              <button class="remove-btn" @click=${() => this._removeCalendar(cal)}>✕</button>
+              <mwc-button class="remove-btn" @click=${() => this._removeCalendar(cal)}>
+                Remove
+              </mwc-button>
             </div>
           `,
         )}
         ${availableForGlobal.length
           ? html`
-              <select
+              <ha-select
                 class="add-select"
-                @change=${(e: Event) => {
-                  const val = (e.target as HTMLSelectElement).value;
-                  if (val) {
-                    this._addCalendar(val);
-                    (e.target as HTMLSelectElement).value = '';
-                  }
+                .label=${'Add calendar'}
+                .value=${''}
+                @selected=${(e: Event) => {
+                  const val = this._readValue(e);
+                  if (val) this._addCalendar(val);
                 }}
               >
-                <option value="">— add calendar —</option>
-                ${availableForGlobal.map((id) => html`<option value="${id}">${id}</option>`)}
-              </select>
+                ${availableForGlobal.map((id) => html`<mwc-list-item .value=${id}>${id}</mwc-list-item>`) }
+              </ha-select>
             `
           : html``}
 
         <h3>
-          Person Groups <button class="small-btn" @click=${this._addPerson}>+ Add Person</button>
+          Person Groups
+          <mwc-button class="small-btn" @click=${this._addPerson}>Add Person</mwc-button>
         </h3>
         <p class="hint">Group calendars under a person to get a quick visibility toggle.</p>
 
@@ -223,57 +228,54 @@ class FamilyCalendarForHomeassistantEditor extends LitElement {
           (person, idx) => html`
             <div class="person-block">
               <div class="person-row">
-                <label class="inline-field">
-                  Name
-                  <input
-                    type="text"
-                    .value=${person.name}
-                    @input=${(e: Event) =>
-                      this._updatePersonName(idx, (e.target as HTMLInputElement).value)}
-                  />
-                </label>
-                <label class="inline-field">
-                  Color
-                  <input
-                    type="color"
-                    .value=${person.color ?? '#039be5'}
-                    @input=${(e: Event) =>
-                      this._updatePersonColor(idx, (e.target as HTMLInputElement).value)}
-                  />
-                </label>
-                <button class="remove-btn" @click=${() => this._removePerson(idx)}>Remove</button>
+                <ha-textfield
+                  class="inline-field"
+                  .label=${'Name'}
+                  .value=${person.name}
+                  @input=${(e: Event) => this._updatePersonName(idx, this._readValue(e))}
+                ></ha-textfield>
+                <ha-textfield
+                  class="inline-field"
+                  .label=${'Color'}
+                  .placeholder=${'#039be5'}
+                  .value=${person.color ?? '#039be5'}
+                  @input=${(e: Event) => this._updatePersonColor(idx, this._readValue(e))}
+                ></ha-textfield>
+                <mwc-button class="remove-btn" @click=${() => this._removePerson(idx)}>
+                  Remove
+                </mwc-button>
               </div>
 
               ${person.calendars.map(
                 (cal) => html`
                   <div class="list-item indent">
                     <span>${cal}</span>
-                    <button
+                    <mwc-button
                       class="remove-btn"
                       @click=${() => this._removeCalendarFromPerson(idx, cal)}
                     >
-                      ✕
-                    </button>
+                      Remove
+                    </mwc-button>
                   </div>
                 `,
               )}
               ${this._calendarEntities.filter((id) => !person.calendars.includes(id)).length
                 ? html`
-                    <select
+                    <ha-select
                       class="add-select indent"
-                      @change=${(e: Event) => {
-                        const val = (e.target as HTMLSelectElement).value;
+                      .label=${`Add calendar to ${person.name}`}
+                      .value=${''}
+                      @selected=${(e: Event) => {
+                        const val = this._readValue(e);
                         if (val) {
                           this._addCalendarToPerson(idx, val);
-                          (e.target as HTMLSelectElement).value = '';
                         }
                       }}
                     >
-                      <option value="">— add calendar to ${person.name} —</option>
                       ${this._calendarEntities
                         .filter((id) => !person.calendars.includes(id))
-                        .map((id) => html`<option value="${id}">${id}</option>`)}
-                    </select>
+                        .map((id) => html`<mwc-list-item .value=${id}>${id}</mwc-list-item>`)}
+                    </ha-select>
                   `
                 : html``}
             </div>
@@ -288,7 +290,7 @@ class FamilyCalendarForHomeassistantEditor extends LitElement {
       padding: 8px 0;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 10px;
     }
 
     h3 {
@@ -307,31 +309,6 @@ class FamilyCalendarForHomeassistantEditor extends LitElement {
       margin: 0 0 4px;
     }
 
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      font-size: 0.85rem;
-      color: var(--secondary-text-color, #666);
-    }
-
-    .checkbox-field {
-      flex-direction: row;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-    }
-
-    .field input,
-    .field select {
-      padding: 6px;
-      border: 1px solid var(--divider-color, #e0e0e0);
-      border-radius: 4px;
-      font-size: 0.9rem;
-      background: var(--input-fill-color, #f5f5f5);
-      color: var(--primary-text-color);
-    }
-
     .list-item {
       display: flex;
       align-items: center;
@@ -347,13 +324,7 @@ class FamilyCalendarForHomeassistantEditor extends LitElement {
     }
 
     .add-select {
-      padding: 6px;
-      border: 1px dashed var(--divider-color, #e0e0e0);
-      border-radius: 4px;
-      font-size: 0.85rem;
-      background: transparent;
-      color: var(--primary-text-color);
-      cursor: pointer;
+      width: 100%;
     }
 
     .add-select.indent {
@@ -361,22 +332,13 @@ class FamilyCalendarForHomeassistantEditor extends LitElement {
     }
 
     .remove-btn {
-      background: transparent;
-      border: none;
-      color: var(--error-color, #f44336);
-      cursor: pointer;
-      font-size: 0.85rem;
-      padding: 2px 4px;
+      --mdc-theme-primary: var(--error-color, #f44336);
+      min-width: 0;
     }
 
     .small-btn {
-      background: var(--primary-color, #03a9f4);
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      padding: 4px 8px;
-      font-size: 0.8rem;
-      cursor: pointer;
+      --mdc-theme-primary: var(--primary-color, #03a9f4);
+      margin-left: auto;
     }
 
     .person-block {
@@ -396,22 +358,8 @@ class FamilyCalendarForHomeassistantEditor extends LitElement {
     }
 
     .inline-field {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      font-size: 0.8rem;
-      color: var(--secondary-text-color, #666);
       flex: 1;
-      min-width: 80px;
-    }
-
-    .inline-field input {
-      padding: 4px;
-      border: 1px solid var(--divider-color, #e0e0e0);
-      border-radius: 4px;
-      font-size: 0.85rem;
-      background: var(--input-fill-color, #f5f5f5);
-      color: var(--primary-text-color);
+      min-width: 140px;
     }
   `;
 }
