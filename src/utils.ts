@@ -106,13 +106,13 @@ export async function fetchCalendarEvents(
 }
 
 /**
- * Format a Date to YYYY-MM-DDTHH:MM for use in datetime-local inputs.
+ * Format a Date to YYYY-MM-DDTHH:MM:SS for use in datetime selectors.
  */
 export function formatDateTimeLocal(date: Date): string {
   const pad = (n: number) => String(n).padStart(2, '0');
   return (
     `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
-    `T${pad(date.getHours())}:${pad(date.getMinutes())}`
+    `T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
   );
 }
 

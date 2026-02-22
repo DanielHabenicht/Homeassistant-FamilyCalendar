@@ -18,7 +18,7 @@ h3 {
 .hint {
   font-size: 0.8rem;
   color: var(--secondary-text-color, #666);
-  margin: 0 0 4px;
+  margin: -6px 0 4px;
 }
 
 .list-item {
@@ -45,7 +45,7 @@ h3 {
 
 .remove-btn {
   color: var(--error-color, #f44336);
-  min-width: 0;
+  --mdc-icon-size: 18px;
 }
 
 .small-btn {

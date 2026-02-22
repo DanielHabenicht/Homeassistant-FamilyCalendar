@@ -9,6 +9,7 @@ type EventFormCalendarOption = {
 };
 
 class FamilyCalendarEventForm extends LitElement {
+  @property({ attribute: false }) public hass?: unknown;
   @property({ type: String }) public title = '';
   @property({ type: String }) public description = '';
   @property({ type: Boolean }) public allDay = false;
@@ -16,19 +17,28 @@ class FamilyCalendarEventForm extends LitElement {
   @property({ type: String }) public end = '';
   @property({ type: String }) public calendar = '';
   @property({ type: Array }) public calendarOptions: EventFormCalendarOption[] = [];
-  @property({ type: String }) public locale = 'en';
-  @property({ type: String }) public inputType: 'date' | 'datetime-local' = 'datetime-local';
   @property({ type: String }) public errorMessage = '';
   @property({ attribute: false }) public dictionary!: Record<CardTextKey, string>;
 
-  private _readValue(event: Event): string {
-    const target = event.target as { value?: string } | null;
-    return target?.value ?? '';
+  private _readSelectorValue<T>(event: Event, fallback: T): T {
+    const customEvent = event as CustomEvent<{ value?: T }>;
+    return customEvent.detail?.value ?? fallback;
   }
 
-  private _readChecked(event: Event): boolean {
-    const target = event.target as { checked?: boolean } | null;
-    return target?.checked ?? false;
+  private _normalizeDateTimeValue(value: string): string {
+    const trimmed = value.trim();
+    if (!trimmed) return '';
+    if (trimmed.includes('T')) return trimmed;
+    const spaceIndex = trimmed.indexOf(' ');
+    if (spaceIndex > 0) {
+      return `${trimmed.slice(0, spaceIndex)}T${trimmed.slice(spaceIndex + 1)}`;
+    }
+    return trimmed;
+  }
+
+  private _toSelectorDateTimeValue(value: string): string {
+    const normalized = this._normalizeDateTimeValue(value);
+    return normalized.replace('T', ' ');
   }
 
   private _emit(name: string, value?: string | boolean) {
@@ -44,68 +54,105 @@ class FamilyCalendarEventForm extends LitElement {
   protected render(): TemplateResult {
     return html`
       <div class="dialog-fields">
-        <ha-textfield
+        <ha-selector
           class="dialog-input"
+          .hass=${this.hass}
+          .selector=${{
+            text: {
+              multiline: false,
+            },
+          }}
           .label=${this.dictionary.title}
-          .placeholder=${this.dictionary.placeholder}
           .value=${this.title}
-          @input=${(e: Event) => this._emit('familycalendar-title-changed', this._readValue(e))}
-          @keydown=${(e: KeyboardEvent) => e.key === 'Enter' && this._emit('familycalendar-submit')}
-        ></ha-textfield>
+          @value-changed=${(e: Event) =>
+            this._emit('familycalendar-title-changed', this._readSelectorValue(e, this.title))}
+        ></ha-selector>
 
-        <ha-textarea
+        <ha-selector
           class="dialog-input"
+          .hass=${this.hass}
+          .selector=${{
+            text: {
+              multiline: true,
+            },
+          }}
           .label=${this.dictionary.description}
-          .placeholder=${this.dictionary.descriptionPlaceholder}
           .value=${this.description}
-          @input=${(e: Event) =>
-            this._emit('familycalendar-description-changed', this._readValue(e))}
-        ></ha-textarea>
+          @value-changed=${(e: Event) =>
+            this._emit(
+              'familycalendar-description-changed',
+              this._readSelectorValue(e, this.description),
+            )}
+        ></ha-selector>
 
-        <ha-formfield .label=${this.dictionary.allDay}>
-          <ha-checkbox
-            .checked=${this.allDay}
-            @change=${(e: Event) =>
-              this._emit('familycalendar-all-day-changed', this._readChecked(e))}
-          ></ha-checkbox>
-        </ha-formfield>
-
-        <ha-textfield
+        <ha-selector
           class="dialog-input"
+          .hass=${this.hass}
+          .selector=${{
+            boolean: {},
+          }}
+          .label=${this.dictionary.allDay}
+          .value=${this.allDay}
+          @value-changed=${(e: Event) =>
+            this._emit('familycalendar-all-day-changed', this._readSelectorValue(e, this.allDay))}
+        ></ha-selector>
+
+        <ha-selector
+          class="dialog-input"
+          .hass=${this.hass}
+          .selector=${this.allDay ? { date: {} } : { datetime: {} }}
           .label=${this.dictionary.start}
-          type=${this.inputType}
-          lang=${this.locale}
-          .value=${this.start}
-          @input=${(e: Event) => this._emit('familycalendar-start-changed', this._readValue(e))}
-        ></ha-textfield>
+          .value=${this.allDay ? this.start : this._toSelectorDateTimeValue(this.start)}
+          @value-changed=${(e: Event) => {
+            const value = this._readSelectorValue(e, this.start);
+            this._emit(
+              'familycalendar-start-changed',
+              this.allDay ? value : this._normalizeDateTimeValue(value),
+            );
+          }}
+        ></ha-selector>
 
-        <ha-textfield
+        <ha-selector
           class="dialog-input"
+          .hass=${this.hass}
+          .selector=${this.allDay ? { date: {} } : { datetime: {} }}
           .label=${this.dictionary.end}
-          type=${this.inputType}
-          lang=${this.locale}
-          .value=${this.end}
-          @input=${(e: Event) => this._emit('familycalendar-end-changed', this._readValue(e))}
-        ></ha-textfield>
+          .value=${this.allDay ? this.end : this._toSelectorDateTimeValue(this.end)}
+          @value-changed=${(e: Event) => {
+            const value = this._readSelectorValue(e, this.end);
+            this._emit(
+              'familycalendar-end-changed',
+              this.allDay ? value : this._normalizeDateTimeValue(value),
+            );
+          }}
+        ></ha-selector>
 
-        <ha-select
+        <ha-selector
           class="dialog-input"
+          .hass=${this.hass}
+          .selector=${{
+            select: {
+              mode: 'dropdown',
+              options: this.calendarOptions.map((option) => ({
+                value: option.value,
+                label: option.label,
+              })),
+            },
+          }}
           .label=${this.dictionary.calendar}
           .value=${this.calendar}
-          @selected=${(e: Event) =>
-            this._emit('familycalendar-calendar-changed', this._readValue(e))}
-          @change=${(e: Event) => this._emit('familycalendar-calendar-changed', this._readValue(e))}
-        >
-          ${this.calendarOptions.map(
-            (option) => html`
-              <mwc-list-item .value=${option.value} ?selected=${option.value === this.calendar}
-                >${option.label}</mwc-list-item
-              >
-            `,
-          )}
-        </ha-select>
+          @value-changed=${(e: Event) =>
+            this._emit(
+              'familycalendar-calendar-changed',
+              this._readSelectorValue(e, this.calendar),
+            )}
+        ></ha-selector>
 
-        ${this.errorMessage ? html`<p class="dialog-error">${this.errorMessage}</p>` : nothing}
+        ${this.errorMessage
+          ? html`<ha-input-helper-text class="dialog-error"
+              >${this.errorMessage}</ha-input-helper-text
+            >`
+          : nothing}
       </div>
     `;
   }

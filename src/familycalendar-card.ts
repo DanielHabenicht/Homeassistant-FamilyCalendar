@@ -478,7 +478,8 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
 
     const parseInput = (value: string, allDay: boolean): Date | undefined => {
       if (!value) return undefined;
-      const date = allDay ? new Date(`${value}T00:00:00`) : new Date(value);
+      const normalizedValue = allDay ? `${value}T00:00:00` : value.replace(' ', 'T');
+      const date = new Date(normalizedValue);
       return Number.isNaN(date.getTime()) ? undefined : date;
     };
 
@@ -748,7 +749,6 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
 
   private _renderDialog(): TemplateResult {
     const allIds = getAllCalendarIds(this._config!);
-    const inputType = this._newEventAllDay ? 'date' : 'datetime-local';
     const locale = this._getLocale();
     const dictionary = getCardDictionary(locale);
     const heading = this._dialogMode === 'edit' ? dictionary.editEvent : dictionary.newEvent;
@@ -756,6 +756,7 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
     return html`
       <ha-dialog class="dialog" open .heading=${heading} @closed=${this._closeDialog}>
         <familycalendar-event-form
+          .hass=${this.hass}
           .title=${this._newEventTitle}
           .description=${this._newEventDescription}
           .allDay=${this._newEventAllDay}
@@ -763,8 +764,6 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
           .end=${this._newEventEnd}
           .calendar=${this._newEventCalendar}
           .calendarOptions=${allIds.map((id) => ({ value: id, label: this._calendarLabel(id) }))}
-          .locale=${locale}
-          .inputType=${inputType}
           .errorMessage=${this._errorMessage}
           .dictionary=${dictionary}
           @familycalendar-title-changed=${(e: CustomEvent<{ value: string }>) =>
@@ -782,7 +781,7 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
           @familycalendar-submit=${this._saveEvent}
         ></familycalendar-event-form>
 
-        <ha-button slot="secondaryAction" @click=${this._closeDialog}>
+        <ha-button slot="secondaryAction" appearance="plain" @click=${this._closeDialog}>
           ${this._getText('cancel')}
         </ha-button>
         ${this._dialogMode === 'edit'
@@ -790,6 +789,7 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
               <ha-button
                 slot="primaryAction"
                 class="dialog-delete"
+                appearance="accent"
                 ?disabled=${this._deleting || this._saving}
                 @click=${this._deleteEvent}
               >
@@ -799,6 +799,7 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
           : nothing}
         <ha-button
           slot="primaryAction"
+          appearance="filled"
           ?disabled=${this._saving || this._deleting}
           @click=${this._saveEvent}
         >
