@@ -740,20 +740,25 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
           ? html`
               <div class="person-selectors">
                 ${groups.map(
-                  (group) => html`
-                    <button
-                      class="person-chip ${this._isGroupVisible(group) ? 'active' : ''}"
-                      title="${group.label}"
-                      @click=${() => this._toggleGroup(group)}
-                    >
-                      ${group.icon
-                        ? html`<ha-icon icon="${group.icon}"></ha-icon>`
-                        : html`<span class="person-avatar"
-                            >${group.label.charAt(0).toUpperCase()}</span
-                          >`}
-                      <span class="person-name">${group.label}</span>
-                    </button>
-                  `,
+                  (group) => {
+                    const personColor = group.color || 'var(--primary-color, #03a9f4)';
+                    const isVisible = this._isGroupVisible(group);
+                    return html`
+                      <button
+                        class="person-chip ${isVisible ? 'active' : ''}"
+                        title="${group.label}"
+                        @click=${() => this._toggleGroup(group)}
+                        style="${isVisible ? `background: ${personColor}; border-color: ${personColor};` : `border-color: ${personColor};`}"
+                      >
+                        ${group.icon
+                          ? html`<ha-icon icon="${group.icon}"></ha-icon>`
+                          : html`<span class="person-avatar" style="${isVisible ? '' : `background: ${personColor}; color: #fff;`}"
+                              >${group.label.charAt(0).toUpperCase()}</span
+                            >`}
+                        <span class="person-name">${group.label}</span>
+                      </button>
+                    `;
+                  },
                 )}
               </div>
             `
