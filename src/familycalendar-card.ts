@@ -8,14 +8,7 @@
  *  - Configurable calendar list with optional person grouping
  */
 
-import {
-  LitElement,
-  html,
-  unsafeCSS,
-  type PropertyValues,
-  type TemplateResult,
-  nothing,
-} from 'lit';
+import { LitElement, html, unsafeCSS, type TemplateResult, nothing } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { Calendar } from '@fullcalendar/core';
 import allLocales from '@fullcalendar/core/locales-all';
@@ -67,7 +60,6 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
   @state() private _errorMessage = '';
 
   private _calendar?: Calendar;
-  private _showClickTestAlert = true;
 
   // FullCalendar instance is created once and reused
   private _fcInitialized = false;
@@ -437,10 +429,6 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
   }
 
   private _openEditEventDialog(event: EventApi) {
-    if (this._showClickTestAlert) {
-      window.alert(`Event click detected: ${event.title || 'Untitled event'}`);
-    }
-
     const start = event.start ?? (event.startStr ? new Date(event.startStr) : null);
     if (!start) return;
 
