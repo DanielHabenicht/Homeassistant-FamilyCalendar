@@ -1,0 +1,19 @@
+:host {
+  display: block;
+}
+
+.dialog-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dialog-input {
+  width: 100%;
+}
+
+.dialog-error {
+  color: var(--error-color, #f44336);
+  font-size: 0.85rem;
+  margin: 0;
+}

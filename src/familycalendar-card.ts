@@ -40,6 +40,7 @@ import styles from './familycalendar-card.scss';
 // Card editor (simple config UI)
 // ---------------------------------------------------------------------------
 import './familycalendar-card-editor.js';
+import './familycalendar-event-form.js';
 
 // ---------------------------------------------------------------------------
 // Main card element
@@ -585,11 +586,6 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
     return target?.value ?? '';
   }
 
-  private _readChecked(event: Event): boolean {
-    const target = event.target as { checked?: boolean } | null;
-    return target?.checked ?? false;
-  }
-
   private _readSelectValue(event: Event): string {
     const customEvent = event as CustomEvent<{ value?: string }>;
     const detailValue = customEvent.detail?.value;
@@ -838,70 +834,45 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
     const locale = this._getLocale();
     const heading =
       this._dialogMode === 'edit' ? this._getText('editEvent') : this._getText('newEvent');
+    const formTexts = {
+      title: this._getText('title'),
+      placeholder: this._getText('placeholder'),
+      description: this._getText('description'),
+      descriptionPlaceholder: this._getText('descriptionPlaceholder'),
+      allDay: this._getText('allDay'),
+      start: this._getText('start'),
+      end: this._getText('end'),
+      calendar: this._getText('calendar'),
+    };
 
     return html`
       <ha-dialog class="dialog" open .heading=${heading} @closed=${this._closeDialog}>
-        <div class="dialog-fields">
-          <ha-textfield
-            class="dialog-input"
-            .label=${this._getText('title')}
-            .placeholder=${this._getText('placeholder')}
-            .value=${this._newEventTitle}
-            @input=${(e: Event) => (this._newEventTitle = this._readValue(e))}
-            @keydown=${(e: KeyboardEvent) => e.key === 'Enter' && this._saveEvent()}
-          ></ha-textfield>
-
-          <ha-textarea
-            class="dialog-input"
-            .label=${this._getText('description')}
-            .placeholder=${this._getText('descriptionPlaceholder')}
-            .value=${this._newEventDescription}
-            @input=${(e: Event) => (this._newEventDescription = this._readValue(e))}
-          ></ha-textarea>
-
-          <ha-formfield .label=${this._getText('allDay')}>
-            <ha-checkbox
-              .checked=${this._newEventAllDay}
-              @change=${(e: Event) => this._handleAllDayToggle(this._readChecked(e))}
-            ></ha-checkbox>
-          </ha-formfield>
-
-          <ha-textfield
-            class="dialog-input"
-            .label=${this._getText('start')}
-            type=${inputType}
-            lang=${locale}
-            .value=${this._newEventStart}
-            @input=${(e: Event) => (this._newEventStart = this._readValue(e))}
-          ></ha-textfield>
-
-          <ha-textfield
-            class="dialog-input"
-            .label=${this._getText('end')}
-            type=${inputType}
-            lang=${locale}
-            .value=${this._newEventEnd}
-            @input=${(e: Event) => (this._newEventEnd = this._readValue(e))}
-          ></ha-textfield>
-
-          <ha-select
-            class="dialog-input"
-            .label=${this._getText('calendar')}
-            .value=${this._newEventCalendar}
-            @selected=${(e: Event) => (this._newEventCalendar = this._readValue(e))}
-            @change=${(e: Event) => (this._newEventCalendar = this._readValue(e))}
-          >
-            ${allIds.map(
-              (id) => html`
-                <mwc-list-item .value=${id} ?selected=${id === this._newEventCalendar}>
-                  ${this._calendarLabel(id)}
-                </mwc-list-item>
-              `,
-            )}
-          </ha-select>
-
-          ${this._errorMessage ? html`<p class="dialog-error">${this._errorMessage}</p>` : nothing}
-        </div>
+        <familycalendar-event-form
+          .title=${this._newEventTitle}
+          .description=${this._newEventDescription}
+          .allDay=${this._newEventAllDay}
+          .start=${this._newEventStart}
+          .end=${this._newEventEnd}
+          .calendar=${this._newEventCalendar}
+          .calendarOptions=${allIds.map((id) => ({ value: id, label: this._calendarLabel(id) }))}
+          .locale=${locale}
+          .inputType=${inputType}
+          .errorMessage=${this._errorMessage}
+          .texts=${formTexts}
+          @familycalendar-title-changed=${(e: CustomEvent<{ value: string }>) =>
+            (this._newEventTitle = e.detail.value)}
+          @familycalendar-description-changed=${(e: CustomEvent<{ value: string }>) =>
+            (this._newEventDescription = e.detail.value)}
+          @familycalendar-all-day-changed=${(e: CustomEvent<{ value: boolean }>) =>
+            this._handleAllDayToggle(e.detail.value)}
+          @familycalendar-start-changed=${(e: CustomEvent<{ value: string }>) =>
+            (this._newEventStart = e.detail.value)}
+          @familycalendar-end-changed=${(e: CustomEvent<{ value: string }>) =>
+            (this._newEventEnd = e.detail.value)}
+          @familycalendar-calendar-changed=${(e: CustomEvent<{ value: string }>) =>
+            (this._newEventCalendar = e.detail.value)}
+          @familycalendar-submit=${this._saveEvent}
+        ></familycalendar-event-form>
 
         <ha-button slot="secondaryAction" @click=${this._closeDialog}>
           ${this._getText('cancel')}

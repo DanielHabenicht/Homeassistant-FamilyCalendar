@@ -101,22 +101,6 @@ ha-card {
   --mdc-dialog-max-width: 520px;
 }
 
-.dialog-fields {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.dialog-input {
-  width: 100%;
-}
-
 .dialog-delete {
   color: var(--error-color);
-}
-
-.dialog-error {
-  color: var(--error-color, #f44336);
-  font-size: 0.85rem;
-  margin: 0;
 }
