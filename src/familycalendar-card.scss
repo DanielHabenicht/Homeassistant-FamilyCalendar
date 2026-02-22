@@ -198,6 +198,16 @@ ha-card {
   border-color: var(--primary-color, #03a9f4);
 }
 
+.dialog-checkbox-label {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+
+.dialog-checkbox-label input[type='checkbox'] {
+  margin: 0;
+}
+
 .dialog-error {
   color: var(--error-color, #f44336);
   font-size: 0.85rem;

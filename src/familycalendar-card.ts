@@ -739,27 +739,29 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
         ${groups.length > 1
           ? html`
               <div class="person-selectors">
-                ${groups.map(
-                  (group) => {
-                    const personColor = group.color || 'var(--primary-color, #03a9f4)';
-                    const isVisible = this._isGroupVisible(group);
-                    return html`
-                      <button
-                        class="person-chip ${isVisible ? 'active' : ''}"
-                        title="${group.label}"
-                        @click=${() => this._toggleGroup(group)}
-                        style="${isVisible ? `background: ${personColor}; border-color: ${personColor};` : `border-color: ${personColor};`}"
-                      >
-                        ${group.icon
-                          ? html`<ha-icon icon="${group.icon}"></ha-icon>`
-                          : html`<span class="person-avatar" style="${isVisible ? '' : `background: ${personColor}; color: #fff;`}"
-                              >${group.label.charAt(0).toUpperCase()}</span
-                            >`}
-                        <span class="person-name">${group.label}</span>
-                      </button>
-                    `;
-                  },
-                )}
+                ${groups.map((group) => {
+                  const personColor = group.color || 'var(--primary-color, #03a9f4)';
+                  const isVisible = this._isGroupVisible(group);
+                  return html`
+                    <button
+                      class="person-chip ${isVisible ? 'active' : ''}"
+                      title="${group.label}"
+                      @click=${() => this._toggleGroup(group)}
+                      style="${isVisible
+                        ? `background: ${personColor}; border-color: ${personColor};`
+                        : `border-color: ${personColor};`}"
+                    >
+                      ${group.icon
+                        ? html`<ha-icon icon="${group.icon}"></ha-icon>`
+                        : html`<span
+                            class="person-avatar"
+                            style="${isVisible ? '' : `background: ${personColor}; color: #fff;`}"
+                            >${group.label.charAt(0).toUpperCase()}</span
+                          >`}
+                      <span class="person-name">${group.label}</span>
+                    </button>
+                  `;
+                })}
               </div>
             `
           : nothing}
@@ -797,7 +799,7 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
             />
           </label>
 
-          <label class="dialog-label">
+          <label class="dialog-label dialog-checkbox-label">
             <input
               type="checkbox"
               .checked=${this._newEventAllDay}
