@@ -19,7 +19,6 @@ ha-card {
 }
 
 .person-chip {
-  --ha-filter-chip-color: var(--primary-color);
   cursor: pointer;
 }
 
@@ -113,7 +112,7 @@ ha-card {
 }
 
 .dialog-delete {
-  --mdc-theme-primary: var(--error-color);
+  color: var(--error-color);
 }
 
 .dialog-error {

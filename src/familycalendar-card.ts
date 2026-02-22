@@ -802,12 +802,15 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
                 ${groups.map((group) => {
                   const personColor = group.color || 'var(--primary-color, #03a9f4)';
                   const isVisible = this._isGroupVisible(group);
+                  const chipStyle = isVisible
+                    ? `--md-filter-chip-selected-container-color: ${personColor}; --md-filter-chip-outline-color: ${personColor}; --md-sys-color-on-secondary-container: #fff;`
+                    : '';
                   return html`
                     <ha-filter-chip
                       class="person-chip"
                       .label=${group.label}
                       ?selected=${isVisible}
-                      style="--ha-filter-chip-color: ${personColor};"
+                      style=${chipStyle}
                       @click=${() => this._setGroupVisible(group, !isVisible)}
                     >
                       ${group.icon
@@ -900,22 +903,22 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
           ${this._errorMessage ? html`<p class="dialog-error">${this._errorMessage}</p>` : nothing}
         </div>
 
-        <mwc-button slot="secondaryAction" @click=${this._closeDialog}>
+        <ha-button slot="secondaryAction" @click=${this._closeDialog}>
           ${this._getText('cancel')}
-        </mwc-button>
+        </ha-button>
         ${this._dialogMode === 'edit'
           ? html`
-              <mwc-button
+              <ha-button
                 slot="primaryAction"
                 class="dialog-delete"
                 ?disabled=${this._deleting || this._saving}
                 @click=${this._deleteEvent}
               >
                 ${this._deleting ? this._getText('deleting') : this._getText('delete')}
-              </mwc-button>
+              </ha-button>
             `
           : nothing}
-        <mwc-button
+        <ha-button
           slot="primaryAction"
           ?disabled=${this._saving || this._deleting}
           @click=${this._saveEvent}
@@ -927,7 +930,7 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
             : this._dialogMode === 'edit'
               ? this._getText('update')
               : this._getText('save')}
-        </mwc-button>
+        </ha-button>
       </ha-dialog>
     `;
   }

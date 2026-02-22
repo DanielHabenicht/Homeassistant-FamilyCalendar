@@ -206,9 +206,9 @@ class FamilyCalendarForHomeassistantEditor extends LitElement {
           (cal) => html`
             <div class="list-item">
               <span>${cal}</span>
-              <mwc-button class="remove-btn" @click=${() => this._removeCalendar(cal)}>
+              <ha-button class="remove-btn" @click=${() => this._removeCalendar(cal)}>
                 Remove
-              </mwc-button>
+              </ha-button>
             </div>
           `,
         )}
@@ -223,14 +223,16 @@ class FamilyCalendarForHomeassistantEditor extends LitElement {
                   if (val) this._addCalendar(val);
                 }}
               >
-                ${availableForGlobal.map((id) => html`<mwc-list-item .value=${id}>${id}</mwc-list-item>`) }
+                ${availableForGlobal.map(
+                  (id) => html`<mwc-list-item .value=${id}>${id}</mwc-list-item>`,
+                )}
               </ha-select>
             `
           : html``}
 
         <h3>
           Person Groups
-          <mwc-button class="small-btn" @click=${this._addPerson}>Add Person</mwc-button>
+          <ha-button class="small-btn" @click=${this._addPerson}>Add Person</ha-button>
         </h3>
         <p class="hint">Group calendars under a person to get a quick visibility toggle.</p>
 
@@ -251,21 +253,21 @@ class FamilyCalendarForHomeassistantEditor extends LitElement {
                   .value=${person.color ?? '#039be5'}
                   @input=${(e: Event) => this._updatePersonColor(idx, this._readValue(e))}
                 ></ha-textfield>
-                <mwc-button class="remove-btn" @click=${() => this._removePerson(idx)}>
+                <ha-button class="remove-btn" @click=${() => this._removePerson(idx)}>
                   Remove
-                </mwc-button>
+                </ha-button>
               </div>
 
               ${person.calendars.map(
                 (cal) => html`
                   <div class="list-item indent">
                     <span>${cal}</span>
-                    <mwc-button
+                    <ha-button
                       class="remove-btn"
                       @click=${() => this._removeCalendarFromPerson(idx, cal)}
                     >
                       Remove
-                    </mwc-button>
+                    </ha-button>
                   </div>
                 `,
               )}
@@ -342,12 +344,12 @@ class FamilyCalendarForHomeassistantEditor extends LitElement {
     }
 
     .remove-btn {
-      --mdc-theme-primary: var(--error-color, #f44336);
+      color: var(--error-color, #f44336);
       min-width: 0;
     }
 
     .small-btn {
-      --mdc-theme-primary: var(--primary-color, #03a9f4);
+      color: var(--primary-color, #03a9f4);
       margin-left: auto;
     }
 
