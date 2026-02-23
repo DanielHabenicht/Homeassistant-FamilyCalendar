@@ -1,5 +1,6 @@
 {
     "newEvent": "New Event",
+    "viewEvent": "Event Details",
     "editEvent": "Edit Event",
     "title": "Title",
     "placeholder": "Event title",
@@ -10,6 +11,7 @@
     "end": "End",
     "calendar": "Calendar",
     "cancel": "Cancel",
+    "close": "Close",
     "save": "Save",
     "update": "Update",
     "delete": "Delete",

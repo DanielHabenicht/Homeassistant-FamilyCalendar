@@ -1,5 +1,6 @@
 {
     "newEvent": "Neuer Termin",
+    "viewEvent": "Termindetails",
     "editEvent": "Termin bearbeiten",
     "title": "Titel",
     "placeholder": "Termintitel",
@@ -10,6 +11,7 @@
     "end": "Ende",
     "calendar": "Kalender",
     "cancel": "Abbrechen",
+    "close": "Schließen",
     "save": "Speichern",
     "update": "Aktualisieren",
     "delete": "Löschen",

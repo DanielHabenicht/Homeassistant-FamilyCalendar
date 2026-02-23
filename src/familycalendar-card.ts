@@ -62,11 +62,8 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
   @state() private _newEventEnd = '';
   @state() private _newEventCalendar = '';
   @state() private _newEventAllDay = false;
-  @state() private _dialogMode: 'create' | 'edit' = 'create';
-  @state() private _editingEventEntityId = '';
-  @state() private _editingEventUid = '';
+  @state() private _dialogMode: 'create' | 'view' = 'create';
   @state() private _saving = false;
-  @state() private _deleting = false;
   @state() private _errorMessage = '';
   @state() private _currentView: CalendarCardConfig['initial_view'] = 'dayGridMonth';
   @state() private _calendarTitle = '';
@@ -243,7 +240,7 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
       eventClick(info: EventClickArg) {
         info.jsEvent.preventDefault();
         info.jsEvent.stopPropagation();
-        self._openEditEventDialog(info.event);
+        self._openViewEventDialog(info.event);
       },
       eventDidMount(info: EventMountArg) {
         info.el.style.cursor = 'pointer';
@@ -251,7 +248,7 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
         info.el.addEventListener('click', (ev) => {
           ev.preventDefault();
           ev.stopPropagation();
-          self._openEditEventDialog(info.event);
+          self._openViewEventDialog(info.event);
         });
       },
       eventSources: self._buildEventSources(),
@@ -322,7 +319,7 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
 
     event.preventDefault();
     event.stopPropagation();
-    this._openEditEventDialog(calendarEvent);
+    this._openViewEventDialog(calendarEvent);
   };
 
   private _buildEventSources() {
@@ -416,8 +413,6 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
 
   private _openNewEventDialog(data: NewEventData) {
     this._dialogMode = 'create';
-    this._editingEventEntityId = '';
-    this._editingEventUid = '';
     this._newEventData = data;
     this._newEventTitle = '';
     this._newEventDescription = '';
@@ -438,21 +433,17 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
     this._errorMessage = '';
   }
 
-  private _openEditEventDialog(event: EventApi) {
+  private _openViewEventDialog(event: EventApi) {
     const start = event.start ?? (event.startStr ? new Date(event.startStr) : null);
     if (!start) return;
 
     const end = event.end ?? new Date(start.getTime() + 60 * 60 * 1000);
     const extendedProps = event.extendedProps as Record<string, unknown>;
     const entityId = typeof extendedProps.entityId === 'string' ? extendedProps.entityId : '';
-    const uid = typeof extendedProps.uid === 'string' ? extendedProps.uid : '';
-
-    this._dialogMode = 'edit';
+    this._dialogMode = 'view';
     this._newEventData = { start, end, allDay: event.allDay };
     this._newEventTitle = event.title;
     this._newEventAllDay = event.allDay;
-    this._editingEventEntityId = entityId;
-    this._editingEventUid = uid;
 
     if (event.allDay) {
       this._newEventStart = formatDateLocal(start);
@@ -560,28 +551,8 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
   private _closeDialog() {
     this._newEventData = undefined;
     this._dialogMode = 'create';
-    this._editingEventEntityId = '';
-    this._editingEventUid = '';
     this._newEventDescription = '';
     this._calendar?.unselect();
-  }
-
-  private async _callCalendarServiceWithFallback(
-    services: string[],
-    serviceData: Record<string, unknown>,
-  ): Promise<void> {
-    let lastError: unknown;
-    for (const service of services) {
-      try {
-        await this.hass.callService('calendar', service, serviceData);
-        return;
-      } catch (e) {
-        lastError = e;
-      }
-    }
-
-    if (lastError instanceof Error) throw lastError;
-    throw new Error('Calendar service call failed.');
   }
 
   private async _saveEvent() {
@@ -600,32 +571,7 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
       const startVal = this._newEventStart;
       const endVal = this._newEventEnd;
 
-      if (this._dialogMode === 'edit') {
-        if (!this._editingEventUid) {
-          this._errorMessage = this._getText('uidError');
-          return;
-        }
-
-        const serviceData: Record<string, unknown> = {
-          entity_id: this._editingEventEntityId,
-          uid: this._editingEventUid,
-          summary: this._newEventTitle.trim(),
-        };
-
-        if (this._newEventDescription.trim()) {
-          serviceData.description = this._newEventDescription.trim();
-        }
-
-        if (this._newEventAllDay) {
-          serviceData.start_date = startVal;
-          serviceData.end_date = endVal;
-        } else {
-          serviceData.start_date_time = startVal;
-          serviceData.end_date_time = endVal;
-        }
-
-        await this._callCalendarServiceWithFallback(['edit_event', 'update_event'], serviceData);
-      } else if (this._newEventAllDay) {
+      if (this._newEventAllDay) {
         const allDayData: Record<string, unknown> = {
           entity_id: this._newEventCalendar,
           summary: this._newEventTitle.trim(),
@@ -653,36 +599,9 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
       // Refresh all event sources
       this._calendar?.getEventSources().forEach((src) => src.refetch());
     } catch (e) {
-      const prefix =
-        this._dialogMode === 'edit' ? this._getText('updateError') : this._getText('createError');
-      this._errorMessage = `${prefix}: ${(e as Error).message}`;
+      this._errorMessage = `${this._getText('createError')}: ${(e as Error).message}`;
     } finally {
       this._saving = false;
-    }
-  }
-
-  private async _deleteEvent() {
-    if (this._dialogMode !== 'edit') return;
-    if (!this._editingEventUid) {
-      this._errorMessage = this._getText('uidError');
-      return;
-    }
-    if (!window.confirm(this._getText('deleteConfirm'))) return;
-
-    this._deleting = true;
-    this._errorMessage = '';
-    try {
-      await this._callCalendarServiceWithFallback(['delete_event', 'remove_event'], {
-        entity_id: this._editingEventEntityId,
-        uid: this._editingEventUid,
-      });
-
-      this._closeDialog();
-      this._calendar?.getEventSources().forEach((src) => src.refetch());
-    } catch (e) {
-      this._errorMessage = `${this._getText('deleteError')}: ${(e as Error).message}`;
-    } finally {
-      this._deleting = false;
     }
   }
 
@@ -808,7 +727,7 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
     const allIds = getAllCalendarIds(this._config!);
     const locale = this._getLocale();
     const dictionary = getCardDictionary(locale);
-    const heading = this._dialogMode === 'edit' ? dictionary.editEvent : dictionary.newEvent;
+    const heading = this._dialogMode === 'view' ? dictionary.viewEvent : dictionary.newEvent;
 
     return html`
       <ha-dialog class="dialog" open .heading=${heading} @closed=${this._closeDialog}>
@@ -822,6 +741,7 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
           .calendar=${this._newEventCalendar}
           .calendarOptions=${allIds.map((id) => ({ value: id, label: this._calendarLabel(id) }))}
           .errorMessage=${this._errorMessage}
+          .readOnly=${this._dialogMode === 'view'}
           .dictionary=${dictionary}
           @familycalendar-title-changed=${(e: CustomEvent<{ value: string }>) =>
             (this._newEventTitle = e.detail.value)}
@@ -839,35 +759,20 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
         ></familycalendar-event-form>
 
         <ha-button slot="secondaryAction" appearance="plain" @click=${this._closeDialog}>
-          ${this._getText('cancel')}
+          ${this._dialogMode === 'view' ? this._getText('close') : this._getText('cancel')}
         </ha-button>
-        ${this._dialogMode === 'edit'
+        ${this._dialogMode === 'create'
           ? html`
               <ha-button
                 slot="primaryAction"
-                class="dialog-delete"
-                appearance="accent"
-                ?disabled=${this._deleting || this._saving}
-                @click=${this._deleteEvent}
+                appearance="filled"
+                ?disabled=${this._saving}
+                @click=${this._saveEvent}
               >
-                ${this._deleting ? this._getText('deleting') : this._getText('delete')}
+                ${this._saving ? this._getText('saving') : this._getText('save')}
               </ha-button>
             `
           : nothing}
-        <ha-button
-          slot="primaryAction"
-          appearance="filled"
-          ?disabled=${this._saving || this._deleting}
-          @click=${this._saveEvent}
-        >
-          ${this._saving
-            ? this._dialogMode === 'edit'
-              ? this._getText('updating')
-              : this._getText('saving')
-            : this._dialogMode === 'edit'
-              ? this._getText('update')
-              : this._getText('save')}
-        </ha-button>
       </ha-dialog>
     `;
   }

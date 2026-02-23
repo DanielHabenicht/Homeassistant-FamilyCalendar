@@ -18,6 +18,7 @@ class FamilyCalendarEventForm extends LitElement {
   @property({ type: String }) public calendar = '';
   @property({ type: Array }) public calendarOptions: EventFormCalendarOption[] = [];
   @property({ type: String }) public errorMessage = '';
+  @property({ type: Boolean }) public readOnly = false;
   @property({ attribute: false }) public dictionary!: Record<CardTextKey, string>;
 
   private _readSelectorValue<T>(event: Event, fallback: T): T {
@@ -64,7 +65,9 @@ class FamilyCalendarEventForm extends LitElement {
           }}
           .label=${this.dictionary.title}
           .value=${this.title}
+          ?disabled=${this.readOnly}
           @value-changed=${(e: Event) =>
+            !this.readOnly &&
             this._emit('familycalendar-title-changed', this._readSelectorValue(e, this.title))}
         ></ha-selector>
 
@@ -78,7 +81,9 @@ class FamilyCalendarEventForm extends LitElement {
           }}
           .label=${this.dictionary.description}
           .value=${this.description}
+          ?disabled=${this.readOnly}
           @value-changed=${(e: Event) =>
+            !this.readOnly &&
             this._emit(
               'familycalendar-description-changed',
               this._readSelectorValue(e, this.description),
@@ -93,7 +98,9 @@ class FamilyCalendarEventForm extends LitElement {
           }}
           .label=${this.dictionary.allDay}
           .value=${this.allDay}
+          ?disabled=${this.readOnly}
           @value-changed=${(e: Event) =>
+            !this.readOnly &&
             this._emit('familycalendar-all-day-changed', this._readSelectorValue(e, this.allDay))}
         ></ha-selector>
 
@@ -103,7 +110,9 @@ class FamilyCalendarEventForm extends LitElement {
           .selector=${this.allDay ? { date: {} } : { datetime: {} }}
           .label=${this.dictionary.start}
           .value=${this.allDay ? this.start : this._toSelectorDateTimeValue(this.start)}
+          ?disabled=${this.readOnly}
           @value-changed=${(e: Event) => {
+            if (this.readOnly) return;
             const value = this._readSelectorValue(e, this.start);
             this._emit(
               'familycalendar-start-changed',
@@ -118,7 +127,9 @@ class FamilyCalendarEventForm extends LitElement {
           .selector=${this.allDay ? { date: {} } : { datetime: {} }}
           .label=${this.dictionary.end}
           .value=${this.allDay ? this.end : this._toSelectorDateTimeValue(this.end)}
+          ?disabled=${this.readOnly}
           @value-changed=${(e: Event) => {
+            if (this.readOnly) return;
             const value = this._readSelectorValue(e, this.end);
             this._emit(
               'familycalendar-end-changed',
@@ -141,7 +152,9 @@ class FamilyCalendarEventForm extends LitElement {
           }}
           .label=${this.dictionary.calendar}
           .value=${this.calendar}
+          ?disabled=${this.readOnly}
           @value-changed=${(e: Event) =>
+            !this.readOnly &&
             this._emit(
               'familycalendar-calendar-changed',
               this._readSelectorValue(e, this.calendar),
