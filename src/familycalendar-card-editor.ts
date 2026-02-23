@@ -162,6 +162,7 @@ class FamilyCalendarForHomeassistantEditor extends LitElement {
               options: [
                 { value: 'dayGridMonth', label: 'Month' },
                 { value: 'timeGridWeek', label: 'Week' },
+                { value: 'timeGridThreeDay', label: '3 Days' },
                 { value: 'timeGridDay', label: 'Day' },
               ],
             },

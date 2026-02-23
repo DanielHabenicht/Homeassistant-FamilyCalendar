@@ -1,6 +1,6 @@
 # FamilyCalendar for Homeassistant
 
-A custom [Home Assistant](https://www.home-assistant.io/) Lovelace card that displays calendar entities with **day / week / month** views, person-based visibility toggles and click-to-create event support.
+A custom [Home Assistant](https://www.home-assistant.io/) Lovelace card that displays calendar entities with **day / 3-day / week / month** views, person-based visibility toggles and click-to-create event support.
 
 Built with [FullCalendar.js](https://fullcalendar.io/) and [Lit](https://lit.dev/).
 
@@ -10,7 +10,7 @@ Built with [FullCalendar.js](https://fullcalendar.io/) and [Lit](https://lit.dev
 
 | Feature              | Details                                                               |
 | -------------------- | --------------------------------------------------------------------- |
-| **Views**            | Month (`dayGridMonth`), Week (`timeGridWeek`), Day (`timeGridDay`)    |
+| **Views**            | Month (`dayGridMonth`), Week (`timeGridWeek`), 3 Days (`timeGridThreeDay`), Day (`timeGridDay`) |
 | **Person selectors** | Chips above the calendar to show/hide calendars grouped by person     |
 | **Click to create**  | Click any time slot or day cell to open a pre-filled new-event dialog |
 | **Edit / Delete**    | Click an existing event to edit details or delete it                  |
@@ -52,7 +52,7 @@ Reload the HA browser tab (Ctrl+Shift+R) after changes.
 ```yaml
 type: custom:familycalendar-card
 title: Family Calendar # optional – card header title
-initial_view: dayGridMonth # dayGridMonth | timeGridWeek | timeGridDay
+initial_view: dayGridMonth # dayGridMonth | timeGridWeek | timeGridThreeDay | timeGridDay
 initial_time: '06:00:00' # optional – initial scroll time for week/day view
 show_now_indicator: true # optional – show current-time line in week/day view
 height: 'auto' # optional – calendar height (e.g. 600px, 80vh, auto)

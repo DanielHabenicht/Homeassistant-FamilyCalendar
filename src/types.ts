@@ -65,8 +65,8 @@ export interface CalendarCardConfig {
   calendars?: string[];
   /** Group calendars by person */
   persons?: PersonGroup[];
-  /** Initial view: dayGridMonth | timeGridWeek | timeGridDay */
-  initial_view?: 'dayGridMonth' | 'timeGridWeek' | 'timeGridDay';
+  /** Initial view: dayGridMonth | timeGridWeek | timeGridThreeDay | timeGridDay */
+  initial_view?: 'dayGridMonth' | 'timeGridWeek' | 'timeGridThreeDay' | 'timeGridDay';
   /** Initial scroll time for time-grid views. Format HH:mm or HH:mm:ss */
   initial_time?: string;
   /** Show current time indicator in time-grid views */

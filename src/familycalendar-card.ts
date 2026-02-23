@@ -2,7 +2,7 @@
  * FamilyCalendar for Homeassistant – Home Assistant Lovelace custom card
  *
  * Uses FullCalendar for rendering and provides:
- *  - Day / Week / Month views
+ *  - Day / 3-Day / Week / Month views
  *  - Click-to-create new calendar entries
  *  - Person-selector switches to show/hide calendars
  *  - Configurable calendar list with optional person grouping
@@ -201,6 +201,12 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
       locales: allLocales,
       locale,
       initialView: this._currentView,
+      views: {
+        timeGridThreeDay: {
+          type: 'timeGrid',
+          duration: { days: 3 },
+        },
+      },
       headerToolbar: false,
       height: this._config.height ?? 'auto',
       editable: false,
@@ -693,6 +699,7 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
               .options=${[
                 { value: 'dayGridMonth', label: this._getText('month') },
                 { value: 'timeGridWeek', label: this._getText('week') },
+                { value: 'timeGridThreeDay', label: this._getText('threeDays') },
                 { value: 'timeGridDay', label: this._getText('day') },
               ]}
               @value-changed=${this._setCalendarView}
