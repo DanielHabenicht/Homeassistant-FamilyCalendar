@@ -71,6 +71,8 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
 
   private _calendar?: Calendar;
   private _calendarContainer?: HTMLDivElement;
+  private _autoScrollIntervalId?: number;
+  private _lastCalendarUserInteractionAt = 0;
 
   // FullCalendar instance is created once and reused
   private _fcInitialized = false;
@@ -95,6 +97,124 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
     }
 
     return `${match[1]}:${match[2]}:${(match[3] ?? '00').padStart(2, '0')}`;
+  }
+
+  private _isTimeGridViewActive(): boolean {
+    const viewType = this._calendar?.view.type ?? '';
+    return viewType.startsWith('timeGrid');
+  }
+
+  private _isAutoScrollToNowEnabled(): boolean {
+    return this._config?.auto_scroll_to_now ?? false;
+  }
+
+  private _getAutoScrollCooldownMs(): number {
+    const raw = this._config?.auto_scroll_cooldown_seconds;
+    if (raw == null || Number.isNaN(raw)) return 30_000;
+    const clampedSeconds = Math.max(0, Math.min(3600, Math.floor(raw)));
+    return clampedSeconds * 1000;
+  }
+
+  private _handleCalendarUserInteraction = () => {
+    this._lastCalendarUserInteractionAt = Date.now();
+  };
+
+  private _isNowMarkerVisible(scroller: HTMLElement, marker: HTMLElement): boolean {
+    const markerRect = marker.getBoundingClientRect();
+    const scrollerRect = scroller.getBoundingClientRect();
+    return markerRect.top >= scrollerRect.top && markerRect.bottom <= scrollerRect.bottom;
+  }
+
+  private _findTimeGridScroller(marker: HTMLElement): HTMLElement | undefined {
+    if (!this._calendarContainer) return undefined;
+
+    const selectorCandidates = [
+      '.fc-timegrid-body .fc-scroller',
+      '.fc-timegrid-body .fc-scroller-harness .fc-scroller',
+      '.fc-scrollgrid-section-body .fc-scroller',
+    ];
+
+    for (const selector of selectorCandidates) {
+      const element = this._calendarContainer.querySelector<HTMLElement>(selector);
+      if (element && element.scrollHeight > element.clientHeight) {
+        return element;
+      }
+    }
+
+    const markerScroller = marker.closest<HTMLElement>('.fc-scroller');
+    if (markerScroller && markerScroller.scrollHeight > markerScroller.clientHeight) {
+      return markerScroller;
+    }
+
+    let current: HTMLElement | null = marker.parentElement;
+    while (current && current !== this._calendarContainer) {
+      const style = window.getComputedStyle(current);
+      const isScrollableY = style.overflowY === 'auto' || style.overflowY === 'scroll';
+      if (isScrollableY && current.scrollHeight > current.clientHeight) {
+        return current;
+      }
+      current = current.parentElement;
+    }
+
+    return undefined;
+  }
+
+  private _scrollNowMarkerIntoView() {
+    if (!this._calendarContainer || !this._isTimeGridViewActive()) return;
+
+    const marker = this._calendarContainer.querySelector<HTMLElement>(
+      '.fc-timegrid-now-indicator-line',
+    );
+    if (!marker) return;
+
+    const scroller = this._findTimeGridScroller(marker);
+    if (!scroller || !marker) return;
+
+    if (this._isNowMarkerVisible(scroller, marker)) return;
+
+    const scrollerRect = scroller.getBoundingClientRect();
+    const markerRect = marker.getBoundingClientRect();
+    const markerTopInContent = markerRect.top - scrollerRect.top + scroller.scrollTop;
+    const targetTop = Math.max(
+      0,
+      Math.min(
+        markerTopInContent - scroller.clientHeight / 2,
+        Math.max(0, scroller.scrollHeight - scroller.clientHeight),
+      ),
+    );
+
+    scroller.scrollTo({ top: targetTop, behavior: 'smooth' });
+  }
+
+  private _attemptAutoScrollToNow() {
+    if (!this._isAutoScrollToNowEnabled()) return;
+    const cooldown = this._getAutoScrollCooldownMs();
+    if (Date.now() - this._lastCalendarUserInteractionAt < cooldown) return;
+    this._scrollNowMarkerIntoView();
+  }
+
+  private _requestAutoScrollCheck() {
+    window.setTimeout(() => this._attemptAutoScrollToNow(), 0);
+  }
+
+  private _startAutoScrollWatcher() {
+    if (!this._isAutoScrollToNowEnabled()) {
+      this._stopAutoScrollWatcher();
+      return;
+    }
+    if (this._autoScrollIntervalId != null) return;
+
+    this._requestAutoScrollCheck();
+    this._autoScrollIntervalId = window.setInterval(() => {
+      this._attemptAutoScrollToNow();
+    }, 60_000);
+  }
+
+  private _stopAutoScrollWatcher() {
+    if (this._autoScrollIntervalId != null) {
+      window.clearInterval(this._autoScrollIntervalId);
+      this._autoScrollIntervalId = undefined;
+    }
   }
 
   private _getWeekFirstDay(): number | undefined {
@@ -221,6 +341,10 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
       nowIndicator: this._config.show_now_indicator ?? true,
       firstDay: this._getWeekFirstDay(),
       scrollTime: this._getInitialScrollTime(),
+      datesSet() {
+        self._updateCalendarTitle();
+        self._requestAutoScrollCheck();
+      },
       // Click on a time slot or day cell opens the new-event dialog
       select(info) {
         self._openNewEventDialog({
@@ -255,11 +379,31 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
 
     this._calendar.render();
     this._updateCalendarTitle();
+    container.addEventListener('wheel', this._handleCalendarUserInteraction, { passive: true });
+    container.addEventListener('touchstart', this._handleCalendarUserInteraction, {
+      passive: true,
+    });
+    container.addEventListener('pointerdown', this._handleCalendarUserInteraction, true);
+    container.addEventListener('keydown', this._handleCalendarUserInteraction, true);
     container.addEventListener('click', this._onCalendarContainerClick, true);
+    this._startAutoScrollWatcher();
     this._fcInitialized = true;
   }
 
   private _teardownCalendar() {
+    this._stopAutoScrollWatcher();
+    this._calendarContainer?.removeEventListener('wheel', this._handleCalendarUserInteraction);
+    this._calendarContainer?.removeEventListener('touchstart', this._handleCalendarUserInteraction);
+    this._calendarContainer?.removeEventListener(
+      'pointerdown',
+      this._handleCalendarUserInteraction,
+      true,
+    );
+    this._calendarContainer?.removeEventListener(
+      'keydown',
+      this._handleCalendarUserInteraction,
+      true,
+    );
     this._calendarContainer?.removeEventListener('click', this._onCalendarContainerClick, true);
     this._calendar?.destroy();
     this._calendar = undefined;
@@ -509,6 +653,8 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
     this._currentView = value;
     this._calendar?.changeView(value);
     this._updateCalendarTitle();
+    this._startAutoScrollWatcher();
+    this._requestAutoScrollCheck();
   }
 
   private _updateCalendarTitle() {
@@ -646,6 +792,8 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
     if (changed.has('_config')) {
       this._calendar?.setOption('firstDay', this._getWeekFirstDay());
     }
+    this._startAutoScrollWatcher();
+    this._requestAutoScrollCheck();
   }
 
   protected render(): TemplateResult {

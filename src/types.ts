@@ -71,6 +71,10 @@ export interface CalendarCardConfig {
   initial_time?: string;
   /** Show current time indicator in time-grid views */
   show_now_indicator?: boolean;
+  /** Automatically keep the current time marker in view for time-grid views */
+  auto_scroll_to_now?: boolean;
+  /** Cooldown in seconds after user interaction before auto-scroll is allowed again */
+  auto_scroll_cooldown_seconds?: number;
   /** Start week view on the current weekday instead of locale default */
   start_week_on_current_day?: boolean;
   /** Calendar height in CSS units (e.g. '600px', 'auto', '80vh') */

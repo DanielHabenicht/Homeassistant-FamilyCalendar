@@ -55,6 +55,8 @@ title: Family Calendar # optional – card header title
 initial_view: dayGridMonth # dayGridMonth | timeGridWeek | timeGridThreeDay | timeGridDay
 initial_time: '06:00:00' # optional – initial scroll time for week/day view
 show_now_indicator: true # optional – show current-time line in week/day view
+auto_scroll_to_now: false # optional – keep current-time marker in visible area (week/day)
+auto_scroll_cooldown_seconds: 30 # optional – wait time after user interaction before auto-scroll
 start_week_on_current_day: false # optional – week view starts on today's weekday
 height: 'auto' # optional – calendar height (e.g. 600px, 80vh, auto)
 

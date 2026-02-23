@@ -62,6 +62,23 @@ class FamilyCalendarForHomeassistantEditor extends LitElement {
     });
   }
 
+  private _setAutoScrollToNow(e: Event) {
+    this._dispatchConfig({
+      ...this._config!,
+      auto_scroll_to_now: this._readSelectorValue(e, false),
+    });
+  }
+
+  private _setAutoScrollCooldownSeconds(e: Event) {
+    const rawValue = this._readSelectorValue<number | string>(e, 30);
+    const parsed =
+      typeof rawValue === 'number' ? rawValue : Number.parseInt(String(rawValue).trim(), 10);
+    this._dispatchConfig({
+      ...this._config!,
+      auto_scroll_cooldown_seconds: Number.isFinite(parsed) ? Math.max(0, parsed) : 30,
+    });
+  }
+
   private _setStartWeekOnCurrentDay(e: Event) {
     this._dispatchConfig({
       ...this._config!,
@@ -193,6 +210,29 @@ class FamilyCalendarForHomeassistantEditor extends LitElement {
           .label=${'Show current time indicator (week/day)'}
           .value=${this._config.show_now_indicator ?? true}
           @value-changed=${this._setShowNowIndicator}
+        ></ha-selector>
+
+        <ha-selector
+          .hass=${this.hass}
+          .selector=${{ boolean: {} }}
+          .label=${'Auto-scroll to current time (week/day)'}
+          .value=${this._config.auto_scroll_to_now ?? false}
+          @value-changed=${this._setAutoScrollToNow}
+        ></ha-selector>
+
+        <ha-selector
+          .hass=${this.hass}
+          .selector=${{
+            number: {
+              mode: 'box',
+              min: 0,
+              max: 3600,
+              step: 1,
+            },
+          }}
+          .label=${'Auto-scroll cooldown after interaction (seconds)'}
+          .value=${this._config.auto_scroll_cooldown_seconds ?? 30}
+          @value-changed=${this._setAutoScrollCooldownSeconds}
         ></ha-selector>
 
         <ha-selector
