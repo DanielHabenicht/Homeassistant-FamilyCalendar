@@ -124,19 +124,6 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
     return document.createElement('familycalendar-card-editor');
   }
 
-  static getStubConfig() {
-    return {
-      type: 'custom:familycalendar-card',
-      title: 'Calendar',
-      calendars: [],
-      persons: [],
-      initial_view: 'dayGridMonth',
-      initial_time: '06:00:00',
-      show_now_indicator: true,
-      height: 'auto',
-    };
-  }
-
   // Build unique person groups (or synthetic ones for ungrouped calendars)
   private get _personGroups(): Array<{
     key: string;

@@ -51,7 +51,7 @@ class FamilyCalendarForHomeassistantEditor extends LitElement {
     const value = this._readSelectorValue(e, '');
     this._dispatchConfig({
       ...this._config!,
-      initial_time: value ? `${value}:00` : undefined,
+      initial_time: value,
     });
   }
 
