@@ -27,6 +27,9 @@
     "month": "Month",
     "week": "Week",
     "day": "Day",
+    "today": "Today",
+    "previous": "Previous",
+    "next": "Next",
     "calendarFallbackTitle": "Calendar",
     "noConfiguration": "No configuration"
 }

@@ -14,12 +14,46 @@ ha-card {
   padding: 8px 16px 12px;
 }
 
-.view-selector {
-  padding: 8px 16px 0;
-}
-
 .person-chip {
   cursor: pointer;
+}
+
+.calendar-navigation {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--divider-color, #e0e0e0);
+}
+
+.calendar-nav-left {
+  display: flex;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+
+.calendar-nav-center {
+  display: flex;
+  justify-content: center;
+  flex: 1 1 auto;
+}
+
+.calendar-nav-right {
+  display: flex;
+  gap: 4px;
+  flex: 0 0 auto;
+  min-width: 140px;
+}
+
+.calendar-nav-right ha-control-select {
+  width: 100%;
+  min-width: 240px;
+}
+
+.calendar-title {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: var(--primary-text-color);
 }
 
 .calendar-wrapper {

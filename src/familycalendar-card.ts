@@ -69,6 +69,8 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
   @state() private _deleting = false;
   @state() private _errorMessage = '';
   @state() private _currentView: CalendarCardConfig['initial_view'] = 'dayGridMonth';
+  @state() private _calendarTitle = '';
+  @state() private _isViewingToday = true;
 
   private _calendar?: Calendar;
   private _calendarContainer?: HTMLDivElement;
@@ -215,11 +217,7 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
       locales: allLocales,
       locale,
       initialView: this._currentView,
-      headerToolbar: {
-        left: 'prev,next today',
-        center: 'title',
-        right: '',
-      },
+      headerToolbar: false,
       height: this._config.height ?? 'auto',
       editable: false,
       selectable: true,
@@ -260,6 +258,7 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
     });
 
     this._calendar.render();
+    this._updateCalendarTitle();
     container.addEventListener('click', this._onCalendarContainerClick, true);
     this._fcInitialized = true;
   }
@@ -519,6 +518,43 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
     if (!value || value === this._currentView) return;
     this._currentView = value;
     this._calendar?.changeView(value);
+    this._updateCalendarTitle();
+  }
+
+  private _updateCalendarTitle() {
+    if (!this._calendar) return;
+    this._calendarTitle = this._calendar.view.title;
+    this._checkIsViewingToday();
+  }
+
+  private _checkIsViewingToday() {
+    if (!this._calendar) return;
+    const view = this._calendar.view;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const viewStart = new Date(view.currentStart);
+    viewStart.setHours(0, 0, 0, 0);
+
+    const viewEnd = new Date(view.currentEnd);
+    viewEnd.setHours(0, 0, 0, 0);
+
+    this._isViewingToday = today >= viewStart && today < viewEnd;
+  }
+
+  private _goToPrev() {
+    this._calendar?.prev();
+    this._updateCalendarTitle();
+  }
+
+  private _goToNext() {
+    this._calendar?.next();
+    this._updateCalendarTitle();
+  }
+
+  private _goToToday() {
+    this._calendar?.today();
+    this._updateCalendarTitle();
   }
 
   private _closeDialog() {
@@ -698,19 +734,6 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
 
     return html`
       <ha-card .header=${title}>
-        <div class="view-selector">
-          <ha-control-select
-            .label=${this._getText('view')}
-            .value=${this._currentView}
-            .options=${[
-              { value: 'dayGridMonth', label: this._getText('month') },
-              { value: 'timeGridWeek', label: this._getText('week') },
-              { value: 'timeGridDay', label: this._getText('day') },
-            ]}
-            @value-changed=${this._setCalendarView}
-          ></ha-control-select>
-        </div>
-
         ${groups.length > 1
           ? html`
               <div class="person-selectors">
@@ -737,6 +760,40 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
               </div>
             `
           : nothing}
+
+        <div class="calendar-navigation">
+          <div class="calendar-nav-left">
+            <ha-button @click=${this._goToPrev} appearance="plain" variant="neutral">
+              <ha-icon icon="mdi:chevron-left" slot="start"></ha-icon>
+            </ha-button>
+            <ha-button
+              @click=${this._goToToday}
+              appearance="plain"
+              variant="neutral"
+              ?disabled=${this._isViewingToday}
+            >
+              ${this._getText('today')}
+            </ha-button>
+            <ha-button @click=${this._goToNext} appearance="plain" variant="neutral">
+              <ha-icon icon="mdi:chevron-right" slot="end"></ha-icon>
+            </ha-button>
+          </div>
+          <div class="calendar-nav-center">
+            <div class="calendar-title">${this._calendarTitle}</div>
+          </div>
+          <div class="calendar-nav-right">
+            <ha-control-select
+              .value=${this._currentView}
+              .options=${[
+                { value: 'dayGridMonth', label: this._getText('month') },
+                { value: 'timeGridWeek', label: this._getText('week') },
+                { value: 'timeGridDay', label: this._getText('day') },
+              ]}
+              @value-changed=${this._setCalendarView}
+              hide-label
+            ></ha-control-select>
+          </div>
+        </div>
 
         <div class="calendar-wrapper">
           <div id="fc-container"></div>
