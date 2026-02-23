@@ -71,6 +71,8 @@ export interface CalendarCardConfig {
   initial_time?: string;
   /** Show current time indicator in time-grid views */
   show_now_indicator?: boolean;
+  /** Start week view on the current weekday instead of locale default */
+  start_week_on_current_day?: boolean;
   /** Calendar height in CSS units (e.g. '600px', 'auto', '80vh') */
   height?: string;
   /** Card title */

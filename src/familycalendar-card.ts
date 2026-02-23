@@ -97,6 +97,11 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
     return `${match[1]}:${match[2]}:${(match[3] ?? '00').padStart(2, '0')}`;
   }
 
+  private _getWeekFirstDay(): number | undefined {
+    if (!this._config?.start_week_on_current_day) return undefined;
+    return new Date().getDay();
+  }
+
   private _getText(key: CardTextKey): string {
     return getCardDictionary(this._getLocale())[key];
   }
@@ -214,6 +219,7 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
       selectMirror: true,
       dayMaxEvents: true,
       nowIndicator: this._config.show_now_indicator ?? true,
+      firstDay: this._getWeekFirstDay(),
       scrollTime: this._getInitialScrollTime(),
       // Click on a time slot or day cell opens the new-event dialog
       select(info) {
@@ -635,6 +641,10 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
       }
       // Refetch when hass updates (e.g. entity state changes)
       this._calendar?.getEventSources().forEach((src) => src.refetch());
+    }
+
+    if (changed.has('_config')) {
+      this._calendar?.setOption('firstDay', this._getWeekFirstDay());
     }
   }
 

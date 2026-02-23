@@ -62,6 +62,13 @@ class FamilyCalendarForHomeassistantEditor extends LitElement {
     });
   }
 
+  private _setStartWeekOnCurrentDay(e: Event) {
+    this._dispatchConfig({
+      ...this._config!,
+      start_week_on_current_day: this._readSelectorValue(e, false),
+    });
+  }
+
   private _setHeight(e: Event) {
     const value = this._readSelectorValue(e, '').trim();
     this._dispatchConfig({
@@ -186,6 +193,14 @@ class FamilyCalendarForHomeassistantEditor extends LitElement {
           .label=${'Show current time indicator (week/day)'}
           .value=${this._config.show_now_indicator ?? true}
           @value-changed=${this._setShowNowIndicator}
+        ></ha-selector>
+
+        <ha-selector
+          .hass=${this.hass}
+          .selector=${{ boolean: {} }}
+          .label=${'Start week view on current day'}
+          .value=${this._config.start_week_on_current_day ?? false}
+          @value-changed=${this._setStartWeekOnCurrentDay}
         ></ha-selector>
 
         <ha-selector

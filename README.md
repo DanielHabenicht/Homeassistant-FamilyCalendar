@@ -8,14 +8,14 @@ Built with [FullCalendar.js](https://fullcalendar.io/) and [Lit](https://lit.dev
 
 ## Features
 
-| Feature              | Details                                                               |
-| -------------------- | --------------------------------------------------------------------- |
+| Feature              | Details                                                                                         |
+| -------------------- | ----------------------------------------------------------------------------------------------- |
 | **Views**            | Month (`dayGridMonth`), Week (`timeGridWeek`), 3 Days (`timeGridThreeDay`), Day (`timeGridDay`) |
-| **Person selectors** | Chips above the calendar to show/hide calendars grouped by person     |
-| **Click to create**  | Click any time slot or day cell to open a pre-filled new-event dialog |
-| **Edit / Delete**    | Click an existing event to edit details or delete it                  |
-| **Calendar picker**  | Choose which HA calendar the new event is created in                  |
-| **Card editor**      | Full Lovelace UI editor – no YAML required                            |
+| **Person selectors** | Chips above the calendar to show/hide calendars grouped by person                               |
+| **Click to create**  | Click any time slot or day cell to open a pre-filled new-event dialog                           |
+| **Edit / Delete**    | Click an existing event to edit details or delete it                                            |
+| **Calendar picker**  | Choose which HA calendar the new event is created in                                            |
+| **Card editor**      | Full Lovelace UI editor – no YAML required                                                      |
 
 ---
 
@@ -55,6 +55,7 @@ title: Family Calendar # optional – card header title
 initial_view: dayGridMonth # dayGridMonth | timeGridWeek | timeGridThreeDay | timeGridDay
 initial_time: '06:00:00' # optional – initial scroll time for week/day view
 show_now_indicator: true # optional – show current-time line in week/day view
+start_week_on_current_day: false # optional – week view starts on today's weekday
 height: 'auto' # optional – calendar height (e.g. 600px, 80vh, auto)
 
 # Simple list of calendar entity IDs (no grouping)
