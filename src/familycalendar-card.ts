@@ -357,7 +357,12 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
         // Fallback for month view single-day clicks
         const start = info.date;
         const end = new Date(start);
-        end.setHours(start.getHours() + 1);
+        if (info.allDay) {
+          // For all-day events, end should be next day (exclusive, like FullCalendar's select)
+          end.setDate(end.getDate() + 1);
+        } else {
+          end.setHours(start.getHours() + 1);
+        }
         self._openNewEventDialog({ start, end, allDay: info.allDay });
       },
       eventClick(info: EventClickArg) {
@@ -717,11 +722,17 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
       const endVal = this._newEventEnd;
 
       if (this._newEventAllDay) {
+        // Home Assistant expects end_date to be exclusive (day after last day of event).
+        // The UI shows inclusive dates, so we need to add 1 day for the API call.
+        const endDate = new Date(`${endVal}T00:00:00`);
+        endDate.setDate(endDate.getDate() + 1);
+        const exclusiveEndVal = formatDateLocal(endDate);
+
         const allDayData: Record<string, unknown> = {
           entity_id: this._newEventCalendar,
           summary: this._newEventTitle.trim(),
           start_date: startVal,
-          end_date: endVal,
+          end_date: exclusiveEndVal,
         };
         if (this._newEventDescription.trim()) {
           allDayData.description = this._newEventDescription.trim();
