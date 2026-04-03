@@ -893,7 +893,7 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
     const heading = this._dialogMode === 'view' ? dictionary.viewEvent : dictionary.newEvent;
 
     return html`
-      <ha-dialog class="dialog" open .heading=${heading} @closed=${this._closeDialog}>
+      <ha-dialog class="dialog" open header-title=${heading} @closed=${this._closeDialog}>
         <familycalendar-event-form
           .hass=${this.hass}
           .title=${this._newEventTitle}
@@ -921,21 +921,18 @@ class FamilyCalendarForHomeassistantCard extends LitElement {
           @familycalendar-submit=${this._saveEvent}
         ></familycalendar-event-form>
 
-        <ha-button slot="secondaryAction" appearance="plain" @click=${this._closeDialog}>
-          ${this._dialogMode === 'view' ? this._getText('close') : this._getText('cancel')}
-        </ha-button>
-        ${this._dialogMode === 'create'
-          ? html`
-              <ha-button
-                slot="primaryAction"
-                appearance="filled"
-                ?disabled=${this._saving}
-                @click=${this._saveEvent}
-              >
-                ${this._saving ? this._getText('saving') : this._getText('save')}
-              </ha-button>
-            `
-          : nothing}
+        <ha-dialog-footer slot="footer">
+          <ha-button slot="secondaryAction" appearance="plain" @click=${this._closeDialog}>
+            ${this._dialogMode === 'view' ? this._getText('close') : this._getText('cancel')}
+          </ha-button>
+          ${this._dialogMode === 'create'
+            ? html`
+                <ha-button slot="primaryAction" ?disabled=${this._saving} @click=${this._saveEvent}>
+                  ${this._saving ? this._getText('saving') : this._getText('save')}
+                </ha-button>
+              `
+            : nothing}
+        </ha-dialog-footer>
       </ha-dialog>
     `;
   }
