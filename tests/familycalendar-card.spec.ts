@@ -242,8 +242,34 @@ test.describe('FamilyCalendar for Homeassistant', () => {
     const disabledState = await card.evaluate((el) => {
       const form = (el.shadowRoot as ShadowRoot).querySelector('familycalendar-event-form');
       const root = form?.shadowRoot;
-      const dates = Array.from(root?.querySelectorAll('ha-date-input') ?? []);
-      const times = Array.from(root?.querySelectorAll('ha-time-input') ?? []);
+
+      const queryShadow = (start: ParentNode | null | undefined, selector: string): Element[] => {
+        if (!start) return [];
+        const results: Element[] = [];
+        const visited = new Set<ParentNode>();
+        const queue: ParentNode[] = [start];
+
+        while (queue.length > 0) {
+          const node = queue.shift()!;
+          if (visited.has(node)) continue;
+          visited.add(node);
+
+          results.push(...Array.from(node.querySelectorAll(selector)));
+
+          const descendants = Array.from(node.querySelectorAll('*'));
+          for (const descendant of descendants) {
+            const host = descendant as Element & { shadowRoot?: ShadowRoot | null };
+            if (host.shadowRoot) {
+              queue.push(host.shadowRoot);
+            }
+          }
+        }
+
+        return results;
+      };
+
+      const dates = queryShadow(root, 'ha-date-input');
+      const times = queryShadow(root, 'ha-time-input');
 
       return {
         dateCount: dates.length,

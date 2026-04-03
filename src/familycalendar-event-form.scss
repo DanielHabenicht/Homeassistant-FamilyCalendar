@@ -12,6 +12,28 @@
   width: 100%;
 }
 
+.dialog-datetime-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  column-gap: 8px;
+}
+
+.dialog-time-input {
+  min-width: 220px;
+}
+
+@media (max-width: 720px) {
+  .dialog-datetime-row {
+    grid-template-columns: 1fr;
+    row-gap: 8px;
+  }
+
+  .dialog-time-input {
+    min-width: 0;
+  }
+}
+
 .dialog-error {
   color: var(--error-color, #f44336);
   font-size: 0.85rem;

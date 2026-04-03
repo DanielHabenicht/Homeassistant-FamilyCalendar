@@ -37,9 +37,28 @@ class FamilyCalendarEventForm extends LitElement {
     return trimmed;
   }
 
-  private _toSelectorDateTimeValue(value: string): string {
+  private _getDatePart(value: string): string {
     const normalized = this._normalizeDateTimeValue(value);
-    return normalized.replace('T', ' ');
+    if (!normalized) return '';
+    const [date] = normalized.split('T');
+    return date ?? '';
+  }
+
+  private _getTimePart(value: string): string {
+    const normalized = this._normalizeDateTimeValue(value);
+    if (!normalized) return '';
+    const [, rawTime = ''] = normalized.split('T');
+    if (!rawTime) return '';
+    const [hours = '00', minutes = '00', seconds = '00'] = rawTime.split(':');
+    return `${hours}:${minutes}:${seconds}`;
+  }
+
+  private _mergeDateAndTime(currentValue: string, nextDate?: string, nextTime?: string): string {
+    const date = (nextDate ?? this._getDatePart(currentValue)).trim();
+    if (!date) return '';
+    const time = (nextTime ?? this._getTimePart(currentValue)).trim();
+    const normalizedTime = time ? this._getTimePart(`2000-01-01T${time}`) : '00:00:00';
+    return `${date}T${normalizedTime || '00:00:00'}`;
   }
 
   private _emit(name: string, value?: string | boolean) {
@@ -104,39 +123,101 @@ class FamilyCalendarEventForm extends LitElement {
             this._emit('familycalendar-all-day-changed', this._readSelectorValue(e, this.allDay))}
         ></ha-selector>
 
-        <ha-selector
-          class="dialog-input"
-          .hass=${this.hass}
-          .selector=${this.allDay ? { date: {} } : { datetime: {} }}
-          .label=${this.dictionary.start}
-          .value=${this.allDay ? this.start : this._toSelectorDateTimeValue(this.start)}
-          ?disabled=${this.readOnly}
-          @value-changed=${(e: Event) => {
-            if (this.readOnly) return;
-            const value = this._readSelectorValue(e, this.start);
-            this._emit(
-              'familycalendar-start-changed',
-              this.allDay ? value : this._normalizeDateTimeValue(value),
-            );
-          }}
-        ></ha-selector>
+        ${this.allDay
+          ? html`<ha-selector
+              class="dialog-input"
+              .hass=${this.hass}
+              .selector=${{ date: {} }}
+              .label=${this.dictionary.start}
+              .value=${this.start}
+              ?disabled=${this.readOnly}
+              @value-changed=${(e: Event) => {
+                if (this.readOnly) return;
+                const value = this._readSelectorValue(e, this.start);
+                this._emit('familycalendar-start-changed', value);
+              }}
+            ></ha-selector>`
+          : html`<div class="dialog-datetime-row">
+              <ha-selector
+                class="dialog-input"
+                .hass=${this.hass}
+                .selector=${{ date: {} }}
+                .label=${this.dictionary.start}
+                .value=${this._getDatePart(this.start)}
+                ?disabled=${this.readOnly}
+                @value-changed=${(e: Event) => {
+                  if (this.readOnly) return;
+                  const date = this._readSelectorValue(e, this._getDatePart(this.start));
+                  this._emit(
+                    'familycalendar-start-changed',
+                    this._mergeDateAndTime(this.start, date),
+                  );
+                }}
+              ></ha-selector>
 
-        <ha-selector
-          class="dialog-input"
-          .hass=${this.hass}
-          .selector=${this.allDay ? { date: {} } : { datetime: {} }}
-          .label=${this.dictionary.end}
-          .value=${this.allDay ? this.end : this._toSelectorDateTimeValue(this.end)}
-          ?disabled=${this.readOnly}
-          @value-changed=${(e: Event) => {
-            if (this.readOnly) return;
-            const value = this._readSelectorValue(e, this.end);
-            this._emit(
-              'familycalendar-end-changed',
-              this.allDay ? value : this._normalizeDateTimeValue(value),
-            );
-          }}
-        ></ha-selector>
+              <ha-selector
+                class="dialog-input dialog-time-input"
+                .hass=${this.hass}
+                .selector=${{ time: {} }}
+                .label=${''}
+                .value=${this._getTimePart(this.start)}
+                ?disabled=${this.readOnly}
+                @value-changed=${(e: Event) => {
+                  if (this.readOnly) return;
+                  const time = this._readSelectorValue(e, this._getTimePart(this.start));
+                  this._emit(
+                    'familycalendar-start-changed',
+                    this._mergeDateAndTime(this.start, undefined, time),
+                  );
+                }}
+              ></ha-selector>
+            </div>`}
+        ${this.allDay
+          ? html`<ha-selector
+              class="dialog-input"
+              .hass=${this.hass}
+              .selector=${{ date: {} }}
+              .label=${this.dictionary.end}
+              .value=${this.end}
+              ?disabled=${this.readOnly}
+              @value-changed=${(e: Event) => {
+                if (this.readOnly) return;
+                const value = this._readSelectorValue(e, this.end);
+                this._emit('familycalendar-end-changed', value);
+              }}
+            ></ha-selector>`
+          : html`<div class="dialog-datetime-row">
+              <ha-selector
+                class="dialog-input"
+                .hass=${this.hass}
+                .selector=${{ date: {} }}
+                .label=${this.dictionary.end}
+                .value=${this._getDatePart(this.end)}
+                ?disabled=${this.readOnly}
+                @value-changed=${(e: Event) => {
+                  if (this.readOnly) return;
+                  const date = this._readSelectorValue(e, this._getDatePart(this.end));
+                  this._emit('familycalendar-end-changed', this._mergeDateAndTime(this.end, date));
+                }}
+              ></ha-selector>
+
+              <ha-selector
+                class="dialog-input dialog-time-input"
+                .hass=${this.hass}
+                .selector=${{ time: {} }}
+                .label=${''}
+                .value=${this._getTimePart(this.end)}
+                ?disabled=${this.readOnly}
+                @value-changed=${(e: Event) => {
+                  if (this.readOnly) return;
+                  const time = this._readSelectorValue(e, this._getTimePart(this.end));
+                  this._emit(
+                    'familycalendar-end-changed',
+                    this._mergeDateAndTime(this.end, undefined, time),
+                  );
+                }}
+              ></ha-selector>
+            </div>`}
 
         <ha-selector
           class="dialog-input"
