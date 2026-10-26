@@ -1,0 +1,78 @@
+# yaml-language-server: $schema=https://agent-box.sh/schema/agentbox.schema.json
+# AgentBox setup for Homeassistant-FamilyCalendar (a Lit/FullCalendar Lovelace card).
+#
+# What runs:
+# - install       : npm ci (package-lock.json) + Playwright chromium for `npm run test:e2e`.
+# - ha-config     : renders a box-only copy of homeassistant/config/configuration.yaml.
+# - dev           : `npm run dev` = rollup watch -> dist/familycalendar-card.js (+ serve on :4000).
+# - homeassistant : the same image as docker-compose.yml, on :8123, exposed as the box URL.
+#
+# Issues / decisions:
+# - The committed configuration.yaml loads the card from http://localhost:4000/...
+#   That breaks when HA is opened via https://<box>.localhost (mixed content, and
+#   "localhost" there is the host, not the box). Instead of editing the committed
+#   file, ha-config renders a copy with the resource pointed at
+#   /local/familycalendar/familycalendar-card.js, and the HA container bind-mounts
+#   that copy over /config/configuration.yaml plus /workspace/dist at
+#   /config/www/familycalendar. So HA serves the card itself, same origin. The
+#   host workflow (docker compose + :4000) is unchanged.
+# - HA runs via plain `docker run` (not the `image:` form) because it needs
+#   bind mounts. The HA state (.storage, onboarding user) lives in
+#   /workspace/homeassistant/config (gitignored), so it IS captured by
+#   `agentbox checkpoint`. No seed task needed; the Playwright auth.setup
+#   onboards a fresh instance itself (testuser / testpassword1).
+# - The image pull (~1.5GB) happens on every new box, because the dind image
+#   store isn't checkpointed. That's why the readiness timeout is long.
+defaults:
+  box:
+    withPlaywright: true
+
+tasks:
+  install:
+    command: |
+      set -e
+      npm ci || npm install
+      npx playwright install --with-deps chromium
+    run_once: true
+
+  ha-config:
+    # Idempotent, re-rendered every boot. It lives outside /workspace so git stays clean.
+    command: |
+      set -e
+      sudo mkdir -p /var/lib/agentbox-ha && sudo chown "$(id -u):$(id -g)" /var/lib/agentbox-ha
+      mkdir -p /workspace/dist
+      agentbox-ctl render /workspace/homeassistant/config/configuration.yaml \
+        --out /var/lib/agentbox-ha/configuration.yaml \
+        --rule 'http://localhost:4000/familycalendar-card.js=>/local/familycalendar/familycalendar-card.js'
+
+services:
+  dev:
+    command: npm run dev
+    needs: [install]
+    ready_when:
+      log_match: "created .*dist"
+      timeout_ms: 180000
+    restart: on-failure
+
+  homeassistant:
+    command: |
+      docker rm -f familycalendar-ha >/dev/null 2>&1 || true
+      exec docker run --rm --name familycalendar-ha \
+        -p 8123:8123 \
+        -e TZ=Europe/Berlin \
+        -v /workspace/homeassistant/config:/config \
+        -v /var/lib/agentbox-ha/configuration.yaml:/config/configuration.yaml:ro \
+        -v /workspace/dist:/config/www/familycalendar:ro \
+        ghcr.io/home-assistant/home-assistant:stable
+    needs: [ha-config, dev]
+    ready_when:
+      http: "http://127.0.0.1:8123/"
+      timeout_ms: 900000
+      interval_ms: 2000
+    expose:
+      port: 8123
+      as: 80
+    restart: always
+    backoff:
+      initial_ms: 2000
+      max_ms: 30000
